@@ -22,7 +22,7 @@ import ./make-test-python.nix ({ pkgs, ... }: {
     test-support.displayManager.auto.user = "alice";
 
     systemd.shutdown.test = pkgs.writeScript "test.shutdown" ''
-      #!${pkgs.stdenv.shell}
+      #!${pkgs.runtimeShell}
       PATH=${lib.makeBinPath (with pkgs; [ utillinux coreutils ])}
       mount -t 9p shared -o trans=virtio,version=9p2000.L /tmp/shared
       touch /tmp/shared/shutdown-test
@@ -49,6 +49,13 @@ import ./make-test-python.nix ({ pkgs, ... }: {
           touch "$HOME/user_conf_read"
         fi
       '';
+    };
+
+    systemd.watchdog = {
+      device = "/dev/watchdog";
+      runtimeTime = "30s";
+      rebootTime = "10min";
+      kexecTime = "5min";
     };
   };
 
@@ -97,6 +104,11 @@ import ./make-test-python.nix ({ pkgs, ... }: {
             re.search(r"^Filesystem state: *clean$", extinfo, re.MULTILINE) is not None
         ), ("File system was not cleanly unmounted: " + extinfo)
 
+    # Regression test for https://github.com/NixOS/nixpkgs/pull/91232
+    with subtest("setting transient hostnames works"):
+        machine.succeed("hostnamectl set-hostname --transient machine-transient")
+        machine.fail("hostnamectl set-hostname machine-all")
+
     with subtest("systemd-shutdown works"):
         machine.shutdown()
         machine.wait_for_unit("multi-user.target")
@@ -117,5 +129,20 @@ import ./make-test-python.nix ({ pkgs, ... }: {
         retcode, output = machine.execute("systemctl status testservice1.service")
         assert retcode in [0, 3]  # https://bugs.freedesktop.org/show_bug.cgi?id=77507
         assert "CPU:" in output
+
+    # Test systemd is configured to manage a watchdog
+    with subtest("systemd manages hardware watchdog"):
+        machine.wait_for_unit("multi-user.target")
+
+        # It seems that the device's path doesn't appear in 'systemctl show' so
+        # check it separately.
+        assert "WatchdogDevice=/dev/watchdog" in machine.succeed(
+            "cat /etc/systemd/system.conf"
+        )
+
+        output = machine.succeed("systemctl show | grep Watchdog")
+        assert "RuntimeWatchdogUSec=30s" in output
+        assert "RebootWatchdogUSec=10m" in output
+        assert "KExecWatchdogUSec=5m" in output
   '';
 })

@@ -5,11 +5,11 @@
 
 stdenv.mkDerivation rec {
   pname = "nim";
-  version = "1.0.6";
+  version = "1.2.4";
 
   src = fetchurl {
     url = "https://nim-lang.org/download/${pname}-${version}.tar.xz";
-    sha256 = "1cv6bxc7w21455c0pv0r2h64ljyzw266jsk1fsgiiyk2rx8mfkhk";
+    sha256 = "0dnn60slvp3ynlx3zhv3cjkanv8zglljxws0db8g0rdyz8r8zwgf";
   };
 
   enableParallelBuilding = true;

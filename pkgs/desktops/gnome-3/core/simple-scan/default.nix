@@ -1,24 +1,60 @@
-{ stdenv, fetchurl, meson, ninja, pkgconfig, gettext, itstool, python3, wrapGAppsHook
-, cairo, gdk-pixbuf, colord, glib, gtk3, gusb, packagekit, libwebp
-, libxml2, sane-backends, vala, gnome3, gobject-introspection }:
+{ stdenv
+, fetchurl
+, meson
+, ninja
+, pkgconfig
+, gettext
+, itstool
+, python3
+, wrapGAppsHook
+, cairo
+, gdk-pixbuf
+, colord
+, glib
+, gtk3
+, gusb
+, packagekit
+, libwebp
+, libxml2
+, sane-backends
+, vala
+, gnome3
+, gobject-introspection
+}:
 
 stdenv.mkDerivation rec {
   pname = "simple-scan";
-  version = "3.34.2";
+  version = "3.36.3";
 
   src = fetchurl {
     url = "mirror://gnome/sources/simple-scan/${stdenv.lib.versions.majorMinor version}/${pname}-${version}.tar.xz";
-    sha256 = "1fk3g4f9slckqfwm576jrjq1d1qihw0dlgzdf00ns7qbhzb0kxsp";
+    sha256 = "0gsz7jqk0fdj0mama3cnss9i1adw18cpdnlcjcjh4r5qijmvx0vh";
   };
 
-  buildInputs = [
-    cairo gdk-pixbuf colord glib gnome3.adwaita-icon-theme gusb
-    gtk3 libwebp packagekit sane-backends vala
-  ];
   nativeBuildInputs = [
-    meson ninja gettext itstool pkgconfig python3 wrapGAppsHook libxml2
-    # For setup hook
-    gobject-introspection
+    meson
+    ninja
+    gettext
+    itstool
+    pkgconfig
+    python3
+    wrapGAppsHook
+    libxml2
+    gobject-introspection # For setup hook
+  ];
+
+  buildInputs = [
+    cairo
+    gdk-pixbuf
+    colord
+    glib
+    gnome3.adwaita-icon-theme
+    gusb
+    gtk3
+    libwebp
+    packagekit
+    sane-backends
+    vala
   ];
 
   postPatch = ''
@@ -43,9 +79,9 @@ stdenv.mkDerivation rec {
       XSANE uses. This means that all existing scanners will work and the
       interface is well tested.
     '';
-    homepage = https://gitlab.gnome.org/GNOME/simple-scan;
+    homepage = "https://gitlab.gnome.org/GNOME/simple-scan";
     license = licenses.gpl3Plus;
-    maintainers = gnome3.maintainers;
+    maintainers = teams.gnome.members;
     platforms = platforms.linux;
   };
 }

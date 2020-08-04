@@ -24,7 +24,7 @@
 , gd ? null, libpng ? null
 , libidn2
 , bison
-, python3
+, python3Minimal
 }:
 
 { name
@@ -36,9 +36,9 @@
 } @ args:
 
 let
-  version = "2.30";
+  version = "2.31";
   patchSuffix = "";
-  sha256 = "1bxqpg91d02qnaz837a5kamm0f43pr1il4r9pknygywsar713i72";
+  sha256 = "05zxkyz9bv3j9h0xyid1rhvh3klhsmrpkf3bcs6frvlgyr2gwilj";
 in
 
 assert withLinuxHeaders -> linuxHeaders != null;
@@ -89,15 +89,27 @@ stdenv.mkDerivation ({
         less linux-*?/arch/x86/kernel/syscall_table_32.S
        */
       ./allow-kernel-2.6.32.patch
+
+      /* Provide a fallback for missing prlimit64 syscall on RHEL 6 -like
+         kernels.
+
+         This patch is maintained by @veprbl. If it gives you trouble, feel
+         free to ping me, I'd be happy to help.
+       */
+      (fetchurl {
+        url = "https://git.savannah.gnu.org/cgit/guix.git/plain/gnu/packages/patches/glibc-reinstate-prlimit64-fallback.patch?id=eab07e78b691ae7866267fc04d31c7c3ad6b0eeb";
+        sha256 = "091bk3kyrx1gc380gryrxjzgcmh1ajcj8s2rjhp2d2yzd5mpd5ps";
+      })
+
       /* Provide utf-8 locales by default, so we can use it in stdenv without depending on our large locale-archive. */
       (fetchurl {
         url = "https://salsa.debian.org/glibc-team/glibc/raw/49767c9f7de4828220b691b29de0baf60d8a54ec/debian/patches/localedata/locale-C.diff";
         sha256 = "0irj60hs2i91ilwg5w7sqrxb695c93xg0ik7yhhq9irprd7fidn4";
       })
-    ]
-    ++ lib.optionals stdenv.isx86_64 [
+
       ./fix-x64-abi.patch
-      ./2.27-CVE-2019-19126.patch
+      ./2.30-cve-2020-1752.patch
+      ./2.31-cve-2020-10029.patch
     ]
     ++ lib.optional stdenv.hostPlatform.isMusl ./fix-rpc-types-musl-conflicts.patch
     ++ lib.optional stdenv.buildPlatform.isDarwin ./darwin-cross-build.patch;
@@ -155,7 +167,7 @@ stdenv.mkDerivation ({
   outputs = [ "out" "bin" "dev" "static" ];
 
   depsBuildBuild = [ buildPackages.stdenv.cc ];
-  nativeBuildInputs = [ bison python3 ];
+  nativeBuildInputs = [ bison python3Minimal ];
   buildInputs = [ linuxHeaders ] ++ lib.optionals withGd [ gd libpng ];
 
   # Needed to install share/zoneinfo/zone.tab.  Set to impure /bin/sh to
@@ -210,7 +222,7 @@ stdenv.mkDerivation ({
   doCheck = false; # fails
 
   meta = {
-    homepage = https://www.gnu.org/software/libc/;
+    homepage = "https://www.gnu.org/software/libc/";
     description = "The GNU C Library";
 
     longDescription =

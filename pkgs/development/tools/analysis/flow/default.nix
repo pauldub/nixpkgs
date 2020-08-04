@@ -2,13 +2,13 @@
 
 stdenv.mkDerivation rec {
   pname = "flow";
-  version = "0.118.0";
+  version = "0.130.0";
 
   src = fetchFromGitHub {
     owner  = "facebook";
     repo   = "flow";
     rev    = "refs/tags/v${version}";
-    sha256 = "103dgj61qhbqzfgqjbcww2bfipk894glj9xjg1r2zwfsgpxy6x26";
+    sha256 = "1wgf6dib6f1iwkndr2glq8zi2ssg7xvppkm9awic114i4pr88bfa";
   };
 
   installPhase = ''
@@ -21,7 +21,7 @@ stdenv.mkDerivation rec {
 
   meta = with stdenv.lib; {
     description = "A static type checker for JavaScript";
-    homepage = https://flow.org/;
+    homepage = "https://flow.org/";
     changelog = "https://github.com/facebook/flow/releases/tag/v${version}";
     license = licenses.mit;
     platforms = ocamlPackages.ocaml.meta.platforms;

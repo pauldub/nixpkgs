@@ -1,6 +1,7 @@
 { buildPythonPackage
 , fetchFromGitHub
 , imageio
+, imagecorruptions
 , numpy
 , opencv3
 , pytest
@@ -33,6 +34,7 @@ buildPythonPackage rec {
 
   propagatedBuildInputs = [
     imageio
+    imagecorruptions
     numpy
     opencv3
     scikitimage
@@ -41,15 +43,14 @@ buildPythonPackage rec {
     six
   ];
 
-  # augmenters requires a significant increase in packages requires
   checkPhase = ''
-     pytest ./test --ignore=test/augmenters
+     pytest ./test
   '';
 
   checkInputs = [ opencv3 pytest ];
 
   meta = with stdenv.lib; {
-    homepage = https://github.com/aleju/imgaug;
+    homepage = "https://github.com/aleju/imgaug";
     description = "Image augmentation for machine learning experiments";
     license = licenses.mit;
     maintainers = with maintainers; [ cmcdragonkai rakesh4g ];

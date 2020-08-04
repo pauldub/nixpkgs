@@ -7,11 +7,11 @@ with python3.pkgs;
 
 buildPythonApplication rec {
   pname = "mycli";
-  version = "1.20.1";
+  version = "1.22.1";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "0vhwaqkx4njarm0wy8zg2hvzr2yl92y8gnwipcn7p59sazw4whfl";
+    sha256 = "18qxxrpdksg3s73va7nkbkwi34kg9m1pls7w4fh5f4jk4p434zsf";
   };
 
   propagatedBuildInputs = [
@@ -24,7 +24,8 @@ buildPythonApplication rec {
     export HOME=.
     export LC_ALL="en_US.UTF-8"
 
-    py.test
+    py.test \
+      --ignore=mycli/packages/paramiko_stub/__init__.py
   '';
 
   meta = {
@@ -34,7 +35,7 @@ buildPythonApplication rec {
       Rich command-line interface for MySQL with auto-completion and
       syntax highlighting.
     '';
-    homepage = http://mycli.net;
+    homepage = "http://mycli.net";
     license = lib.licenses.bsd3;
     maintainers = [ lib.maintainers.jojosch ];
   };

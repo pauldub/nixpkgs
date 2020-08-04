@@ -2,11 +2,11 @@
 
 stdenv.mkDerivation rec {
   pname = "debianutils";
-  version = "4.9.1";
+  version = "4.11";
 
   src = fetchurl {
     url = "mirror://debian/pool/main/d/${pname}/${pname}_${version}.tar.xz";
-    sha256 = "14a0fqdpwdw72790jjm01g5n7lwwaf9d6k78fflbysn5v62nd0mg";
+    sha256 = "0lbizfnf3qwsiz2ggia6ff7sjjj8gwhys8bm6wixdc4n0qlycp5v";
   };
 
   meta = with stdenv.lib; {
@@ -16,7 +16,7 @@ stdenv.mkDerivation rec {
 
        The specific utilities included are: add-shell installkernel ischroot remove-shell run-parts savelog tempfile which
     '';
-    downloadPage = https://packages.debian.org/sid/debianutils;
+    downloadPage = "https://packages.debian.org/sid/debianutils";
     license = with licenses; [ gpl2Plus publicDomain smail ];
     maintainers = [];
     platforms = platforms.all;

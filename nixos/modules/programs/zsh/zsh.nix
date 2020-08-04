@@ -135,6 +135,13 @@ in
         type = types.bool;
       };
 
+      enableBashCompletion = mkOption {
+        default = false;
+        description = ''
+          Enable compatibility with bash's programmable completion system.
+        '';
+        type = types.bool;
+      };
 
       enableGlobalCompInit = mkOption {
         default = cfg.enableCompletion;
@@ -162,9 +169,8 @@ in
         # This file is read for all shells.
 
         # Only execute this file once per shell.
-        # But don't clobber the environment of interactive non-login children!
         if [ -n "$__ETC_ZSHENV_SOURCED" ]; then return; fi
-        export __ETC_ZSHENV_SOURCED=1
+        __ETC_ZSHENV_SOURCED=1
 
         if [ -z "$__NIXOS_SET_ENVIRONMENT_DONE" ]; then
             . ${config.system.build.setEnvironment}
@@ -238,6 +244,11 @@ in
         ${optionalString cfg.enableGlobalCompInit ''
           # Enable autocompletion.
           autoload -U compinit && compinit
+        ''}
+
+        ${optionalString cfg.enableBashCompletion ''
+          # Enable compatibility with bash's completion system.
+          autoload -U bashcompinit && bashcompinit
         ''}
 
         # Setup custom interactive shell init stuff.

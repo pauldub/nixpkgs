@@ -1,4 +1,4 @@
-{ stdenv, fetchgit, meson, ninja, pkgconfig
+{ stdenv, fetchgit, meson, ninja, pkgconfig, nix-update-script
 , python3, gtk3, libsecret, gst_all_1, webkitgtk
 , glib-networking, gtkspell3, hunspell, desktop-file-utils
 , gobject-introspection, wrapGAppsHook }:
@@ -57,9 +57,16 @@ python3.pkgs.buildPythonApplication rec {
     patchPythonScript "$out/libexec/eolie-sp"
   '';
 
+  passthru = {
+    updateScript = nix-update-script {
+      attrPath = pname;
+    };
+  };
+
+
   meta = with stdenv.lib; {
     description = "A new GNOME web browser";
-    homepage = https://wiki.gnome.org/Apps/Eolie;
+    homepage = "https://wiki.gnome.org/Apps/Eolie";
     license  = licenses.gpl3Plus;
     maintainers = with maintainers; [ samdroid-apps worldofpeace ];
     platforms = platforms.linux;

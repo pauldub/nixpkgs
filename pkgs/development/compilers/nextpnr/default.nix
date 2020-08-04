@@ -14,14 +14,14 @@ let
 in
 with stdenv; mkDerivation rec {
   pname = "nextpnr";
-  version = "2020.02.04";
+  version = "2020.07.08";
 
   srcs = [
     (fetchFromGitHub {
       owner  = "YosysHQ";
       repo   = "nextpnr";
-      rev    = "ca733561873cd54be047ae30a94efcd71b3f8be5";
-      sha256 = "176drrq6w53qbwmnksa1b22w9qz3gd1db9hy2lyv8svbcdxd9qwp";
+      rev    = "3cafb16aa634d2bc369077d8d36760d23973a35b";
+      sha256 = "0z6q8f2f97jr037d51h097vck9jspidjn0pb5irlj0xdnb5si0js";
       name   = "nextpnr";
     })
     (fetchFromGitHub {
@@ -50,7 +50,7 @@ with stdenv; mkDerivation rec {
       "-DBUILD_TESTS=ON"
       "-DICEBOX_ROOT=${icestorm}/share/icebox"
       "-DTRELLIS_INSTALL_PREFIX=${trellis}"
-      "-DPYTRELLIS_LIBDIR=${trellis}/lib/trellis"
+      "-DTRELLIS_LIBDIR=${trellis}/lib/trellis"
       "-DUSE_OPENMP=ON"
       # warning: high RAM usage
       "-DSERIALIZE_CHIPDB=OFF"
@@ -79,7 +79,7 @@ with stdenv; mkDerivation rec {
 
   meta = with lib; {
     description = "Place and route tool for FPGAs";
-    homepage    = https://github.com/yosyshq/nextpnr;
+    homepage    = "https://github.com/yosyshq/nextpnr";
     license     = licenses.isc;
     platforms   = platforms.all;
     maintainers = with maintainers; [ thoughtpolice emily ];

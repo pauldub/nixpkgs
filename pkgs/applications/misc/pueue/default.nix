@@ -2,21 +2,27 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "pueue";
-  version = "0.1.5";
+  version = "0.7.1";
 
   src = fetchFromGitHub {
     owner = "Nukesor";
     repo = pname;
     rev = "v${version}";
-    sha256 = "03aj4vw8kvwqk1i1a4kah5b574ahs930ij7xmqsvdy7f8c2g6pbq";
+    sha256 = "1ksks8c35q9aq5vnjxh480vqjyaa8c1fz1fb465vngnlyw762b22";
   };
+
+  cargoSha256 = "0v1h4jhrzfb55zmpnbq18188rdvx7a7lvnjqh0w7cy90kvxssian";
 
   nativeBuildInputs = [ installShellFiles ];
 
-  cargoSha256 = "1y33n0dmrssv35l0apfq1mchyh92cfbzjarh0m8zb2nxwhvk7paw";
+  checkFlagsArray = [ "--skip=test_single_huge_payload" ];
 
   postInstall = ''
-    installShellCompletion utils/completions/pueue.{bash,fish} --zsh utils/completions/_pueue
+    # zsh completion generation fails. See: https://github.com/Nukesor/pueue/issues/57
+    for shell in bash fish; do
+      $out/bin/pueue completions $shell .
+      installShellCompletion pueue.$shell
+    done
   '';
 
   meta = with lib; {

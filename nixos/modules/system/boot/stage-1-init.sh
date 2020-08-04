@@ -144,6 +144,14 @@ for o in $(cat /proc/cmdline); do
             set -- $(IFS==; echo $o)
             stage2Init=$2
             ;;
+        boot.persistence=*)
+            set -- $(IFS==; echo $o)
+            persistence=$2
+            ;;
+        boot.persistence.opt=*)
+            set -- $(IFS==; echo $o)
+            persistence_opt=$2
+            ;;
         boot.trace|debugtrace)
             # Show each command.
             set -x
@@ -210,6 +218,8 @@ done
 # Create device nodes in /dev.
 @preDeviceCommands@
 echo "running udev..."
+mkdir -p /etc/systemd
+ln -sfn @linkUnits@ /etc/systemd/network
 mkdir -p /etc/udev
 ln -sfn @udevRules@ /etc/udev/rules.d
 mkdir -p /dev/.mdadm
@@ -266,7 +276,7 @@ checkFS() {
         return 0
     fi
 
-    # Device might be already mounted manually 
+    # Device might be already mounted manually
     # e.g. NBD-device or the host filesystem of the file which contains encrypted root fs
     if mount | grep -q "^$device on "; then
         echo "skip checking already mounted $device"
@@ -351,7 +361,7 @@ mountFS() {
             elif [ "$fsType" = f2fs ]; then
                 echo "resizing $device..."
                 fsck.f2fs -fp "$device"
-                resize.f2fs "$device" 
+                resize.f2fs "$device"
             fi
             ;;
     esac
@@ -530,6 +540,14 @@ while read -u 3 mountPoint; do
       umount /tmp-iso
       rmdir /tmp-iso
       continue
+    fi
+
+    if [ "$mountPoint" = / ] && [ "$device" = tmpfs ] && [ ! -z "$persistence" ]; then
+        echo persistence...
+        waitDevice "$persistence"
+        echo enabling persistence...
+        mountFS "$persistence" "$mountPoint" "$persistence_opt" "auto"
+        continue
     fi
 
     mountFS "$device" "$mountPoint" "$options" "$fsType"

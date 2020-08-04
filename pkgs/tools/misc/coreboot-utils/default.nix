@@ -1,9 +1,9 @@
 { stdenv, fetchurl, zlib, pciutils, coreutils, acpica-tools, iasl, makeWrapper, gnugrep, gnused, file, buildEnv }:
 
 let
-  version = "4.10";
+  version = "4.12";
 
-  meta = with stdenv.lib; {
+  commonMeta = with stdenv.lib; {
     description = "Various coreboot-related tools";
     homepage = "https://www.coreboot.org";
     license = licenses.gpl2;
@@ -12,11 +12,11 @@ let
   };
 
   generic = { pname, path ? "util/${pname}", ... }@args: stdenv.mkDerivation (rec {
-    inherit pname version meta;
+    inherit pname version;
 
     src = fetchurl {
       url = "https://coreboot.org/releases/coreboot-${version}.tar.xz";
-      sha256 = "1jsiz17afi2lqg1jv6lsl8s05w7vr7iwgg86y2qp369hcz6kcwfa";
+      sha256 = "1qibds9lsk22wf1sxwg0jg32fgcvc9an39vf74y1hwwvxq0d1jpd";
     };
 
     enableParallelBuilding = true;
@@ -29,7 +29,9 @@ let
       "INSTALL=install"
       "PREFIX=${placeholder "out"}"
     ];
-  } // args);
+
+    meta = commonMeta // args.meta;
+  } // (removeAttrs args ["meta"]));
 
   utils = {
     msrtool = generic {
@@ -99,6 +101,7 @@ in utils // {
     paths = stdenv.lib.attrValues utils;
     postBuild = "rm -rf $out/sbin";
   }) // {
-    inherit meta version;
+    inherit version;
+    meta = commonMeta;
   };
 }

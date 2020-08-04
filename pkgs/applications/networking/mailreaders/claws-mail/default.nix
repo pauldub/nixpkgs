@@ -30,11 +30,11 @@ with stdenv.lib;
 
 stdenv.mkDerivation rec {
   pname = "claws-mail";
-  version = "3.17.4";
+  version = "3.17.6";
 
   src = fetchurl {
     url = "http://www.claws-mail.org/download.php?file=releases/claws-mail-${version}.tar.xz";
-    sha256 = "00mfhaac16sv67rwiq98hr4nl5zmd1h2afswwwksdcsi3q9x23jr";
+    sha256 = "1s05qw0r0gqwvvkxvrrwbjkbi61dvilixiwrpgcq21qc9csc9r0m";
   };
 
   outputs = [ "out" "dev" ];
@@ -104,9 +104,9 @@ stdenv.mkDerivation rec {
 
   meta = {
     description = "The user-friendly, lightweight, and fast email client";
-    homepage = https://www.claws-mail.org/;
+    homepage = "https://www.claws-mail.org/";
     license = licenses.gpl3;
     platforms = platforms.linux;
-    maintainers = with maintainers; [ fpletz globin ];
+    maintainers = with maintainers; [ fpletz globin orivej ];
   };
 }

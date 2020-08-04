@@ -29,7 +29,7 @@ let
             boot.loader.grub.splashImage = null;
           ''}
 
-          boot.loader.grub.extraConfig = "serial; terminal_output.serial";
+          boot.loader.grub.extraConfig = "serial; terminal_output serial";
           ${if grubUseEfi then ''
             boot.loader.grub.device = "nodev";
             boot.loader.grub.efiSupport = true;
@@ -64,8 +64,8 @@ let
   # a test script fragment `createPartitions', which must create
   # partitions and filesystems.
   testScriptFun = { bootLoader, createPartitions, grubVersion, grubDevice, grubUseEfi
-                  , grubIdentifier, preBootCommands, extraConfig
-                  , testCloneConfig
+                  , grubIdentifier, preBootCommands, postBootCommands, extraConfig
+                  , testSpecialisationConfig
                   }:
     let iface = if grubVersion == 1 then "ide" else "virtio";
         isEfi = bootLoader == "systemd-boot" || (bootLoader == "grub" && grubUseEfi);
@@ -97,14 +97,13 @@ let
 
 
       def create_machine_named(name):
-          return create_machine({**default_flags, "name": "boot-after-install"})
+          return create_machine({**default_flags, "name": name})
 
 
       machine.start()
 
       with subtest("Assert readiness of login prompt"):
           machine.succeed("echo hello")
-          machine.wait_for_unit("nixos-manual")
 
       with subtest("Wait for hard disks to appear in /dev"):
           machine.succeed("udevadm settle")
@@ -217,11 +216,12 @@ let
       machine = create_machine_named("boot-after-rebuild-switch")
       ${preBootCommands}
       machine.wait_for_unit("network.target")
+      ${postBootCommands}
       machine.shutdown()
 
       # Tests for validating clone configuration entries in grub menu
     ''
-    + optionalString testCloneConfig ''
+    + optionalString testSpecialisationConfig ''
       # Reboot Machine
       machine = create_machine_named("clone-default-config")
       ${preBootCommands}
@@ -239,6 +239,7 @@ let
       with subtest("Set grub to boot the second configuration"):
           machine.succeed("grub-reboot 1")
 
+      ${postBootCommands}
       machine.shutdown()
 
       # Reboot Machine
@@ -253,17 +254,18 @@ let
       with subtest("We should find a file named /etc/gitconfig"):
           machine.succeed("test -e /etc/gitconfig")
 
+      ${postBootCommands}
       machine.shutdown()
     '';
 
 
   makeInstallerTest = name:
-    { createPartitions, preBootCommands ? "", extraConfig ? ""
+    { createPartitions, preBootCommands ? "", postBootCommands ? "", extraConfig ? ""
     , extraInstallerConfig ? {}
     , bootLoader ? "grub" # either "grub" or "systemd-boot"
     , grubVersion ? 2, grubDevice ? "/dev/vda", grubIdentifier ? "uuid", grubUseEfi ? false
     , enableOCR ? false, meta ? {}
-    , testCloneConfig ? false
+    , testSpecialisationConfig ? false
     }:
     makeTest {
       inherit enableOCR;
@@ -336,9 +338,9 @@ let
       };
 
       testScript = testScriptFun {
-        inherit bootLoader createPartitions preBootCommands
+        inherit bootLoader createPartitions preBootCommands postBootCommands
                 grubVersion grubDevice grubIdentifier grubUseEfi extraConfig
-                testCloneConfig;
+                testSpecialisationConfig;
       };
     };
 
@@ -412,11 +414,11 @@ let
     grubUseEfi = true;
   };
 
-  clone-test-extraconfig = {
+  specialisation-test-extraconfig = {
     extraConfig = ''
       environment.systemPackages = [ pkgs.grub2 ];
       boot.loader.grub.configurationName = "Home";
-      nesting.clone = [ {
+      specialisation.work.configuration = {
         boot.loader.grub.configurationName = lib.mkForce "Work";
 
         environment.etc = {
@@ -425,9 +427,9 @@ let
               gitproxy = none for work.com
               ";
         };
-      } ];
+      };
     '';
-    testCloneConfig = true;
+    testSpecialisationConfig = true;
   };
 
 
@@ -441,7 +443,7 @@ in {
   simple = makeInstallerTest "simple" simple-test-config;
 
   # Test cloned configurations with the simple grub configuration
-  simpleClone = makeInstallerTest "simpleClone" (simple-test-config // clone-test-extraconfig);
+  simpleSpecialised = makeInstallerTest "simpleSpecialised" (simple-test-config // specialisation-test-extraconfig);
 
   # Simple GPT/UEFI configuration using systemd-boot with 3 partitions: ESP, swap & root filesystem
   simpleUefiSystemdBoot = makeInstallerTest "simpleUefiSystemdBoot" {
@@ -468,7 +470,7 @@ in {
   simpleUefiGrub = makeInstallerTest "simpleUefiGrub" simple-uefi-grub-config;
 
   # Test cloned configurations with the uefi grub configuration
-  simpleUefiGrubClone = makeInstallerTest "simpleUefiGrubClone" (simple-uefi-grub-config // clone-test-extraconfig);
+  simpleUefiGrubSpecialisation = makeInstallerTest "simpleUefiGrubSpecialisation" (simple-uefi-grub-config // specialisation-test-extraconfig);
 
   # Same as the previous, but now with a separate /boot partition.
   separateBoot = makeInstallerTest "separateBoot" {
@@ -553,14 +555,24 @@ in {
           + " mkpart primary 2048M -1s"  # PV2
           + " set 2 lvm on",
           "udevadm settle",
+          "sleep 1",
           "pvcreate /dev/vda1 /dev/vda2",
+          "sleep 1",
           "vgcreate MyVolGroup /dev/vda1 /dev/vda2",
+          "sleep 1",
           "lvcreate --size 1G --name swap MyVolGroup",
-          "lvcreate --size 2G --name nixos MyVolGroup",
+          "sleep 1",
+          "lvcreate --size 3G --name nixos MyVolGroup",
+          "sleep 1",
           "mkswap -f /dev/MyVolGroup/swap -L swap",
           "swapon -L swap",
           "mkfs.xfs -L nixos /dev/MyVolGroup/nixos",
           "mount LABEL=nixos /mnt",
+      )
+    '';
+    postBootCommands = ''
+      assert "loaded active" in machine.succeed(
+          "systemctl list-units 'lvm2-pvscan@*' -ql --no-legend | tee /dev/stderr"
       )
     '';
   };
@@ -648,6 +660,32 @@ in {
     preBootCommands = ''
       machine.start()
       machine.fail("dmesg | grep 'immediate safe mode'")
+    '';
+  };
+
+  bcache = makeInstallerTest "bcache" {
+    createPartitions = ''
+      machine.succeed(
+          "flock /dev/vda parted --script /dev/vda --"
+          + " mklabel msdos"
+          + " mkpart primary ext2 1M 50MB"  # /boot
+          + " mkpart primary 50MB 512MB  "  # swap
+          + " mkpart primary 512MB 1024MB"  # Cache (typically SSD)
+          + " mkpart primary 1024MB -1s ",  # Backing device (typically HDD)
+          "modprobe bcache",
+          "udevadm settle",
+          "make-bcache -B /dev/vda4 -C /dev/vda3",
+          "echo /dev/vda3 > /sys/fs/bcache/register",
+          "echo /dev/vda4 > /sys/fs/bcache/register",
+          "udevadm settle",
+          "mkfs.ext3 -L nixos /dev/bcache0",
+          "mount LABEL=nixos /mnt",
+          "mkfs.ext3 -L boot /dev/vda1",
+          "mkdir /mnt/boot",
+          "mount LABEL=boot /mnt/boot",
+          "mkswap -f /dev/vda2 -L swap",
+          "swapon -L swap",
+      )
     '';
   };
 

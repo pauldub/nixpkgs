@@ -197,9 +197,7 @@ in
           Request encryption keys or passwords for all encrypted datasets on import.
           For root pools the encryption key can be supplied via both an
           interactive prompt (keylocation=prompt) and from a file
-          (keylocation=file://). Note that for data pools the encryption key can
-          be only loaded from a file and not via interactive prompt since the
-          import is processed in a background systemd service.
+          (keylocation=file://).
         '';
       };
 
@@ -433,6 +431,16 @@ in
 
       services.zfs.zed.settings = {
         ZED_EMAIL_PROG = mkDefault "${pkgs.mailutils}/bin/mail";
+        PATH = lib.makeBinPath [
+          packages.zfsUser
+          pkgs.coreutils
+          pkgs.curl
+          pkgs.gawk
+          pkgs.gnugrep
+          pkgs.gnused
+          pkgs.nettools
+          pkgs.utillinux
+        ];
       };
 
       environment.etc = genAttrs
@@ -478,8 +486,13 @@ in
         createImportService = pool:
           nameValuePair "zfs-import-${pool}" {
             description = "Import ZFS pool \"${pool}\"";
+            # we need systemd-udev-settle until https://github.com/zfsonlinux/zfs/pull/4943 is merged
             requires = [ "systemd-udev-settle.service" ];
-            after = [ "systemd-udev-settle.service" "systemd-modules-load.service" ];
+            after = [
+              "systemd-udev-settle.service"
+              "systemd-modules-load.service"
+              "systemd-ask-password-console.service"
+            ];
             wantedBy = (getPoolMounts pool) ++ [ "local-fs.target" ];
             before = (getPoolMounts pool) ++ [ "local-fs.target" ];
             unitConfig = {
@@ -504,7 +517,20 @@ in
               done
               poolImported "${pool}" || poolImport "${pool}"  # Try one last time, e.g. to import a degraded pool.
               if poolImported "${pool}"; then
-                ${optionalString cfgZfs.requestEncryptionCredentials "\"${packages.zfsUser}/sbin/zfs\" load-key -r \"${pool}\""}
+                ${optionalString cfgZfs.requestEncryptionCredentials ''
+                  ${packages.zfsUser}/sbin/zfs list -rHo name,keylocation ${pool} | while IFS=$'\t' read ds kl; do
+                    (case "$kl" in
+                      none )
+                        ;;
+                      prompt )
+                        ${config.systemd.package}/bin/systemd-ask-password "Enter key for $ds:" | ${packages.zfsUser}/sbin/zfs load-key "$ds"
+                        ;;
+                      * )
+                        ${packages.zfsUser}/sbin/zfs load-key "$ds"
+                        ;;
+                    esac) < /dev/null # To protect while read ds kl in case anything reads stdin
+                  done
+                ''}
                 echo "Successfully imported ${pool}"
               else
                 exit 1
@@ -623,7 +649,11 @@ in
         after = [ "zfs-import.target" ];
         path = [ packages.zfsUser ];
         startAt = cfgTrim.interval;
-        serviceConfig.ExecStart = "${pkgs.runtimeShell} -c 'zpool list -H -o name | xargs --no-run-if-empty -n1 zpool trim'";
+        # By default we ignore errors returned by the trim command, in case:
+        # - HDDs are mixed with SSDs
+        # - There is a SSDs in a pool that is currently trimmed.
+        # - There are only HDDs and we would set the system in a degraded state
+        serviceConfig.ExecStart = ''${pkgs.runtimeShell} -c 'for pool in $(zpool list -H -o name); do zpool trim $pool;  done || true' '';
       };
     })
   ];

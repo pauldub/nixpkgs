@@ -16,6 +16,7 @@
 , gtk2
 , gtk3
 , gtk-doc
+, runCommand
 , isocodes
 , cldr-emoji-annotation
 , unicode-character-database
@@ -47,17 +48,25 @@ let
       makeWrapper ${glib.dev}/bin/glib-mkenums $out/bin/glib-mkenums --unset PYTHONPATH
     '';
   };
+  # make-dconf-override-db.sh needs to execute dbus-launch in the sandbox,
+  # it will fail to read /etc/dbus-1/session.conf unless we add this flag
+  dbus-launch = runCommand "sandbox-dbus-launch" {
+    nativeBuildInputs = [ makeWrapper ];
+  } ''
+      makeWrapper ${dbus}/bin/dbus-launch $out/bin/dbus-launch \
+        --add-flags --config-file=${dbus.daemon}/share/dbus-1/session.conf
+  '';
 in
 
 stdenv.mkDerivation rec {
   pname = "ibus";
-  version = "1.5.21";
+  version = "1.5.22";
 
   src = fetchFromGitHub {
     owner = "ibus";
     repo = "ibus";
     rev = version;
-    sha256 = "0fjbqj7d2g5c8i1wdggzhz269xisxv4xb1pa9swalm5p2b2vrjlx";
+    sha256 = "09ynn7gq84q18hhbg6wq2yrliwil42qbzxbwbpggry1s955jg5xb";
   };
 
   patches = [
@@ -71,7 +80,7 @@ stdenv.mkDerivation rec {
   outputs = [ "out" "dev" "installedTests" ];
 
   postPatch = ''
-    echo \#!${runtimeShell} > data/dconf/make-dconf-override-db.sh
+    patchShebangs --build data/dconf/make-dconf-override-db.sh
     cp ${buildPackages.gtk-doc}/share/gtk-doc/data/gtk-doc.make .
   '';
 
@@ -105,6 +114,7 @@ stdenv.mkDerivation rec {
     python3BuildEnv
     vala
     wrapGAppsHook
+    dbus-launch
   ];
 
   propagatedBuildInputs = [

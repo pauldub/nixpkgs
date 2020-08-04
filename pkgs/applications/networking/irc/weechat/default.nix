@@ -27,12 +27,12 @@ let
   in
     assert lib.all (p: p.enabled -> ! (builtins.elem null p.buildInputs)) plugins;
     stdenv.mkDerivation rec {
-      version = "2.7";
+      version = "2.9";
       pname = "weechat";
 
       src = fetchurl {
         url = "https://weechat.org/files/src/weechat-${version}.tar.bz2";
-        sha256 = "00hzchzw1w2181kczcrrnj8ngml3bwk7qciha3higxq3qynf0h8c";
+        sha256 = "12h4m4ag8cdab7q6f5n357mfg0fdayab1gcikncjkkid3bjd4r4g";
       };
 
       outputs = [ "out" "man" ] ++ map (p: p.name) enabledPlugins;
@@ -70,7 +70,7 @@ let
       '';
 
       meta = {
-        homepage = http://www.weechat.org/;
+        homepage = "http://www.weechat.org/";
         description = "A fast, light and extensible chat client";
         longDescription = ''
           You can find more documentation as to how to customize this package
@@ -78,7 +78,7 @@ let
           on https://nixos.org/nixpkgs/manual/#sec-weechat .
         '';
         license = stdenv.lib.licenses.gpl3;
-        maintainers = with stdenv.lib.maintainers; [ lovek323 the-kenny lheckemann ma27 ];
+        maintainers = with stdenv.lib.maintainers; [ lovek323 lheckemann ];
         platforms = stdenv.lib.platforms.unix;
       };
     }

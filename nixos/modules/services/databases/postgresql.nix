@@ -17,10 +17,13 @@ let
       hba_file = '${pkgs.writeText "pg_hba.conf" cfg.authentication}'
       ident_file = '${pkgs.writeText "pg_ident.conf" cfg.identMap}'
       log_destination = 'stderr'
+      log_line_prefix = '${cfg.logLinePrefix}'
       listen_addresses = '${if cfg.enableTCPIP then "*" else "localhost"}'
       port = ${toString cfg.port}
       ${cfg.extraConfig}
-    '';
+    ''; 
+
+  groupAccessAvailable = versionAtLeast postgresql.version "11.0";
 
 in
 
@@ -32,13 +35,7 @@ in
 
     services.postgresql = {
 
-      enable = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Whether to run PostgreSQL.
-        '';
-      };
+      enable = mkEnableOption "PostgreSQL Server";
 
       package = mkOption {
         type = types.package;
@@ -85,6 +82,16 @@ in
           The general form is:
 
           map-name system-username database-username
+        '';
+      };
+
+      initdbArgs = mkOption {
+        type = with types; listOf str;
+        default = [];
+        example = [ "--data-checksums" "--allow-group-access" ];
+        description = ''
+          Additional arguments passed to <literal>initdb</literal> during data dir
+          initialisation.
         '';
       };
 
@@ -180,6 +187,17 @@ in
         '';
       };
 
+      logLinePrefix = mkOption {
+        type = types.str;
+        default = "[%p] ";
+        example = "%m [%p] ";
+        description = ''
+          A printf-style string that is output at the beginning of each log line.
+          Upstream default is <literal>'%m [%p] '</literal>, i.e. it includes the timestamp. We do
+          not include the timestamp, because journal has it anyway.
+        '';
+      };
+
       extraPlugins = mkOption {
         type = types.listOf types.path;
         default = [];
@@ -220,7 +238,7 @@ in
 
   ###### implementation
 
-  config = mkIf config.services.postgresql.enable {
+  config = mkIf cfg.enable {
 
     services.postgresql.package =
       # Note: when changing the default, make it conditional on
@@ -232,13 +250,14 @@ in
             else throw "postgresql_9_4 was removed, please upgrade your postgresql version.");
 
     services.postgresql.dataDir =
-      mkDefault (if versionAtLeast config.system.stateVersion "17.09" then "/var/lib/postgresql/${config.services.postgresql.package.psqlSchema}"
-                 else "/var/db/postgresql");
+      mkDefault (if versionAtLeast config.system.stateVersion "17.09"
+                  then "/var/lib/postgresql/${cfg.package.psqlSchema}"
+                  else "/var/db/postgresql");
 
     services.postgresql.authentication = mkAfter
       ''
         # Generated file; do not edit!
-        local all all              ident
+        local all all              peer
         host  all all 127.0.0.1/32 md5
         host  all all ::1/128      md5
       '';
@@ -284,7 +303,7 @@ in
           ''
             # Initialise the database.
             if ! test -e ${cfg.dataDir}/PG_VERSION; then
-              initdb -U ${cfg.superUser}
+              initdb -U ${cfg.superUser} ${concatStringsSep " " cfg.initdbArgs}
               # See postStart!
               touch "${cfg.dataDir}/.first_startup"
             fi
@@ -293,8 +312,12 @@ in
               ln -sfn "${pkgs.writeText "recovery.conf" cfg.recoveryConfig}" \
                 "${cfg.dataDir}/recovery.conf"
             ''}
+            ${optionalString (!groupAccessAvailable) ''
+              # postgresql pre 11.0 doesn't start if state directory mode is group accessible
+              chmod 0700 "${cfg.dataDir}"
+            ''}
 
-             exec postgres
+            exec postgres
           '';
 
         serviceConfig =
@@ -303,7 +326,7 @@ in
             Group = "postgres";
             PermissionsStartOnly = true;
             RuntimeDirectory = "postgresql";
-            Type = if lib.versionAtLeast cfg.package.version "9.6"
+            Type = if versionAtLeast cfg.package.version "9.6"
                    then "notify"
                    else "simple";
 
@@ -320,7 +343,7 @@ in
         # Wait for PostgreSQL to be ready to accept connections.
         postStart =
           ''
-            PSQL="${pkgs.sudo}/bin/sudo -u ${cfg.superUser} psql --port=${toString cfg.port}"
+            PSQL="${pkgs.utillinux}/bin/runuser -u ${cfg.superUser} -- psql --port=${toString cfg.port}"
 
             while ! $PSQL -d postgres -c "" 2> /dev/null; do
                 if ! kill -0 "$MAINPID"; then exit 1; fi
@@ -352,5 +375,5 @@ in
   };
 
   meta.doc = ./postgresql.xml;
-  meta.maintainers = with lib.maintainers; [ thoughtpolice ];
+  meta.maintainers = with lib.maintainers; [ thoughtpolice danbst ];
 }

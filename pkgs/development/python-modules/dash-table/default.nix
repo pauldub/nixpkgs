@@ -5,11 +5,11 @@
 
 buildPythonPackage rec {
   pname = "dash_table";
-  version = "4.6.0";
+  version = "4.8.1";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "01wzac09ac6nr27if1liaxafzdf67x00vw1iq5vaad1147rdh36k";
+    sha256 = "16q0d9fidllxm7p51i5p4vzknnc09d114zqw3f4a2spr7llga7xj";
   };
 
   # No tests in archive
@@ -17,7 +17,7 @@ buildPythonPackage rec {
 
   meta = with lib; {
     description = "A First-Class Interactive DataTable for Dash";
-    homepage = https://dash.plot.ly/datatable;
+    homepage = "https://dash.plot.ly/datatable";
     license = licenses.mit;
     maintainers = [ maintainers.antoinerg ];
   };

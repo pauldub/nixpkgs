@@ -18,6 +18,7 @@
 , netsurf
 , pango
 , poly2tri-c
+, poppler
 , bzip2
 , json-glib
 , gettext
@@ -34,20 +35,15 @@
 
 stdenv.mkDerivation rec {
   pname = "gegl";
-  version = "0.4.20";
+  version = "0.4.24";
 
   outputs = [ "out" "dev" "devdoc" ];
   outputBin = "dev";
 
   src = fetchurl {
     url = "https://download.gimp.org/pub/gegl/${stdenv.lib.versions.majorMinor version}/${pname}-${version}.tar.xz";
-    sha256 = "1zrxnxlhn0jmshg4n2m2xlgi886w059ynkiiihm7rpi05fs8pg93";
+    sha256 = "d2VJnyc0Gw0WAy5mUxnLwSh2SD/2qUT83ySpxY4+JUo=";
   };
-
-  patches = [
-    # Remove gegl:simple / backend-file test that times out frequently
-    ./patches/no-simple-backend-file-test.patch
-  ];
 
   nativeBuildInputs = [
     pkgconfig
@@ -71,6 +67,7 @@ stdenv.mkDerivation rec {
     netsurf.libnsgif
     pango
     poly2tri-c
+    poppler
     bzip2
     libraw
     libwebp
@@ -114,7 +111,7 @@ stdenv.mkDerivation rec {
 
   meta = with stdenv.lib; {
     description = "Graph-based image processing framework";
-    homepage = http://www.gegl.org;
+    homepage = "http://www.gegl.org";
     license = licenses.gpl3;
     maintainers = with maintainers; [ jtojnar ];
     platforms = platforms.unix;

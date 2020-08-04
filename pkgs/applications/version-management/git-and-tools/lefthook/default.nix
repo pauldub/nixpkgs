@@ -2,16 +2,16 @@
 
 buildGoModule rec {
   pname = "lefthook";
-  version = "0.6.3";
+  version = "0.7.2";
 
   src = fetchFromGitHub {
     rev = "v${version}";
     owner = "Arkweid";
     repo = "lefthook";
-    sha256 = "01zvlw2yyxjg92d1qag1b42kc2kd68h4fmrv9y6ar7z0rw3p9a5d";
+    sha256 = "1ciyxjx3r3dcl8xas49kqsjshs1bv4pafmfmhdfyfdvlaj374hgj";
   };
 
-  modSha256 = "0mjhw778x40c2plmjlkiry4rwvr9xkz65b88a61j86liv2plbmq2";
+  vendorSha256 = "1pdrw4vwbj9cka2pjbjvxviigfvnrf8sgws27ixwwiblbkj4isc8";
 
   meta = with stdenv.lib; {
     description = "Fast and powerful Git hooks manager for any type of projects";

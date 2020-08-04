@@ -2,13 +2,13 @@
 
 callPackage ./generic.nix (args // rec {
   pname = "softmaker-office";
-  version = "972";
-  edition = "2018";
+  version = "1016";
+  edition = "2021";
   suiteName = "SoftMaker Office";
 
   src = fetchurl {
     url = "https://www.softmaker.net/down/softmaker-office-${edition}-${version}-amd64.tgz";
-    sha256 = "06kgkmqg5269a4vm14i89mw8m1x9yy9ajw0dhfcvjizadyzmlqn1";
+    sha256 = "0s8kzpc6w2cjkfqmhb2p1pkmkiq9vk9gnc7z2992kijaf9bwk3qz";
   };
 
   archive = "office${edition}.tar.lzma";

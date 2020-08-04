@@ -6,11 +6,11 @@ in
 
 stdenv.mkDerivation rec {
   pname = "sqlite-analyzer";
-  version = "3.31.0";
+  version = "3.32.3";
 
   src = assert version == sqlite.version; fetchurl {
     url = "https://sqlite.org/2020/sqlite-src-${archiveVersion version}.zip";
-    sha256 = "1dz3s3q9gsxxfj9wp4lqndzpwd1hcvm42yqn02p0l0bs6bw0mp5l";
+    sha256 = "1fgmslzf013ry3a7g2vms7zyg24gs53gfj308r6ki4inbn3g04lk";
   };
 
   nativeBuildInputs = [ unzip ];
@@ -22,8 +22,8 @@ stdenv.mkDerivation rec {
 
   meta = with stdenv.lib; {
     description = "A tool that shows statistics about SQLite databases";
-    downloadPage = http://sqlite.org/download.html;
-    homepage = https://www.sqlite.org;
+    downloadPage = "http://sqlite.org/download.html";
+    homepage = "https://www.sqlite.org";
     license = licenses.publicDomain;
     maintainers = with maintainers; [ pesterhazy ];
     platforms = platforms.unix;

@@ -1,29 +1,43 @@
-{ lib, buildPythonPackage, fetchFromGitHub, fetchpatch, acme, aiohttp, snitun, attrs, pytest-aiohttp, warrant, pytest }:
+{ lib, buildPythonPackage, fetchFromGitHub, fetchpatch
+, acme, aiohttp, snitun, attrs, pycognito, warrant
+, pytest-aiohttp, asynctest, atomicwrites, pytest, pythonOlder }:
 
 buildPythonPackage rec {
   pname = "hass-nabucasa";
-  version = "0.29";
+  version = "0.34.6";
 
   src = fetchFromGitHub {
     owner = "nabucasa";
     repo = pname;
     rev = version;
-    sha256 = "182nh5i3hlj0kqkbynk69md0ddq83w02l8lz4m03d8xbjixzi1k1";
+    sha256 = "1lkqwj58qr0vn7zf5mhrhaz973ahj9wjp4mgzvyja1gcdh6amv34";
   };
 
-  # upstreamed in https://github.com/NabuCasa/hass-nabucasa/pull/119
   postPatch = ''
-    sed -i 's/"acme.*/"acme>=0.40.0,<2.0"/' setup.py
-    cat setup.py
+    sed -i 's/"acme.*"/"acme"/' setup.py
   '';
 
-  propagatedBuildInputs = [ acme aiohttp snitun attrs warrant ];
+  patches = [
+    # relax pytz dependency
+    (fetchpatch {
+      url = "https://github.com/NabuCasa/hass-nabucasa/commit/419e80feddc36c68384c032feda0057515b53eaa.patch";
+      sha256 = "14dgwci8615cwcf27hg7b42s7da50xhyjys3yx446q7ipk8zw4x6";
+    })
+  ];
 
-  checkInputs = [ pytest pytest-aiohttp ];
+  propagatedBuildInputs = [
+    acme aiohttp atomicwrites snitun attrs warrant pycognito
+  ];
+
+  checkInputs = [ pytest pytest-aiohttp asynctest ];
+
+  # Asynctest's mocking is broken with python3.8
+  # https://github.com/Martiusweb/asynctest/issues/132
+  doCheck = pythonOlder "3.8";
 
   checkPhase = ''
     pytest tests/
-    '';
+  '';
 
   meta = with lib; {
     homepage = "https://github.com/NabuCasa/hass-nabucasa";

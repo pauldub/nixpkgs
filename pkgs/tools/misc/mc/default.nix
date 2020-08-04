@@ -15,18 +15,19 @@
 , libssh2
 , openssl
 , coreutils
+, autoreconfHook
 }:
 
 stdenv.mkDerivation rec {
   pname = "mc";
-  version = "4.8.23";
+  version = "4.8.25";
 
   src = fetchurl {
-    url = "http://www.midnight-commander.org/downloads/${pname}-${version}.tar.xz";
-    sha256 = "077z7phzq3m1sxyz7li77lyzv4rjmmh3wp2vy86pnc4387kpqzyx";
+    url = "https://www.midnight-commander.org/downloads/${pname}-${version}.tar.xz";
+    sha256 = "12jlnabnc91xsm35g99g2wnh96jmznvrhffd18rj7fqfy8brdhgz";
   };
 
-  nativeBuildInputs = [ pkgconfig ];
+  nativeBuildInputs = [ pkgconfig autoreconfHook ];
 
   buildInputs = [
     file
@@ -58,12 +59,12 @@ stdenv.mkDerivation rec {
 
   meta = with stdenv.lib; {
     description = "File Manager and User Shell for the GNU Project";
-    downloadPage = "http://www.midnight-commander.org/downloads/";
-    homepage = "http://www.midnight-commander.org";
+    downloadPage = "https://www.midnight-commander.org/downloads/";
+    homepage = "https://www.midnight-commander.org";
     license = licenses.gpl2Plus;
     maintainers = with maintainers; [ sander ];
     platforms = with platforms; linux ++ darwin;
-    repositories.git = git://github.com/MidnightCommander/mc.git;
+    repositories.git = "https://github.com/MidnightCommander/mc.git";
     updateWalker = true;
   };
 }

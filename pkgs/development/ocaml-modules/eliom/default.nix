@@ -1,7 +1,6 @@
 { stdenv, fetchzip, which, ocsigen_server, ocaml,
   lwt_react,
-  opaline, ppx_tools, ppx_deriving, findlib
-, ppx_tools_versioned
+  opaline, ppx_deriving, findlib
 , js_of_ocaml-ocamlbuild, js_of_ocaml-ppx, js_of_ocaml-ppx_deriving_json
 , js_of_ocaml-lwt
 , js_of_ocaml-tyxml
@@ -15,15 +14,14 @@ else
 stdenv.mkDerivation rec
 {
   pname = "eliom";
-  version = "6.8.0";
+  version = "6.12.0";
 
   src = fetchzip {
     url = "https://github.com/ocsigen/eliom/archive/${version}.tar.gz";
-    sha256 = "0di4q0wzbnk9sxlaj97ivghzh8qvjb8n17h80y4nmqhys97pldif";
+    sha256 = "015jh72v6ch9h9czd8sn5kjz3pv6lsnvvnhdjgrplwj443dn1xp8";
   };
 
-  buildInputs = [ ocaml which findlib js_of_ocaml-ocamlbuild js_of_ocaml-ppx_deriving_json opaline ppx_tools
-    ppx_tools_versioned
+  buildInputs = [ ocaml which findlib js_of_ocaml-ocamlbuild js_of_ocaml-ppx_deriving_json opaline
   ];
 
   propagatedBuildInputs = [
@@ -41,7 +39,7 @@ stdenv.mkDerivation rec
   setupHook = [ ./setup-hook.sh ];
 
   meta = {
-    homepage = http://ocsigen.org/eliom/;
+    homepage = "http://ocsigen.org/eliom/";
     description = "OCaml Framework for programming Web sites and client/server Web applications";
 
     longDescription =''Eliom is a framework for programming Web sites

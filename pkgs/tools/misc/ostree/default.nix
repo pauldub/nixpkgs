@@ -2,7 +2,7 @@
 , fetchurl
 , fetchpatch
 , substituteAll
-, pkgconfig
+, pkg-config
 , gtk-doc
 , gobject-introspection
 , gjs
@@ -21,13 +21,15 @@
 , fuse
 , utillinuxMinimal
 , libselinux
+, libsodium
 , libarchive
 , libcap
 , bzip2
 , yacc
 , libxslt
-, docbook_xsl
+, docbook-xsl-nons
 , docbook_xml_dtd_42
+, openssl
 , python3
 }:
 
@@ -37,13 +39,13 @@ let
   ]));
 in stdenv.mkDerivation rec {
   pname = "ostree";
-  version = "2019.6";
+  version = "2020.4";
 
   outputs = [ "out" "dev" "man" "installedTests" ];
 
   src = fetchurl {
     url = "https://github.com/ostreedev/ostree/releases/download/v${version}/libostree-${version}.tar.xz";
-    sha256 = "1bhrfbjna3rnymijxagzkdq2zl74g71s2xmimihjhvcw2zybi0jl";
+    sha256 = "0s13cjrpx5r1dc9j9c9924zak45wl9nlbg9hiwgpsal80l92c39n";
   };
 
   patches = [
@@ -52,12 +54,6 @@ in stdenv.mkDerivation rec {
     # Patch from https://github.com/ostreedev/ostree/pull/1633
     ./01-Drop-ostree-trivial-httpd-CLI-move-to-tests-director.patch
 
-    # Fix tests running in Catalan instead of C locale.
-    (fetchpatch {
-      url = "https://github.com/ostreedev/ostree/commit/5135a1e58ade2bfafc8c1fda359540eafd72531e.patch";
-      sha256 = "1crzaagw1zzx8v6rsnxb9jnc3ij9hlpvdl91w3skqdm28adx7yx8";
-    })
-
     # Workarounds for https://github.com/ostreedev/ostree/issues/1592
     ./fix-1592.patch
 
@@ -65,6 +61,7 @@ in stdenv.mkDerivation rec {
     (substituteAll {
       src = ./fix-test-paths.patch;
       python3 = testPython.interpreter;
+      openssl = "${openssl}/bin/openssl";
     })
   ];
 
@@ -72,14 +69,14 @@ in stdenv.mkDerivation rec {
     autoconf
     automake
     libtool
-    pkgconfig
+    pkg-config
     gtk-doc
     gobject-introspection
     which
     makeWrapper
     yacc
     libxslt
-    docbook_xsl
+    docbook-xsl-nons
     docbook_xml_dtd_42
   ];
 
@@ -91,6 +88,7 @@ in stdenv.mkDerivation rec {
     gpgme
     fuse
     libselinux
+    libsodium
     libcap
     libarchive
     bzip2
@@ -102,16 +100,13 @@ in stdenv.mkDerivation rec {
     gjs
   ];
 
-  preConfigure = ''
-    env NOCONFIGURE=1 ./autogen.sh
-  '';
-
   enableParallelBuilding = true;
 
   configureFlags = [
     "--with-systemdsystemunitdir=${placeholder "out"}/lib/systemd/system"
     "--with-systemdsystemgeneratordir=${placeholder "out"}/lib/systemd/system-generators"
     "--enable-installed-tests"
+    "--with-ed25519-libsodium"
   ];
 
   makeFlags = [
@@ -119,9 +114,18 @@ in stdenv.mkDerivation rec {
     "installed_test_metadir=${placeholder "installedTests"}/share/installed-tests/libostree"
   ];
 
-  postFixup = ''
+  preConfigure = ''
+    env NOCONFIGURE=1 ./autogen.sh
+  '';
+
+  postFixup = let
+    typelibPath = stdenv.lib.makeSearchPath "/lib/girepository-1.0" [
+      (placeholder "out")
+      gobject-introspection
+    ];
+  in ''
     for test in $installedTests/libexec/installed-tests/libostree/*.js; do
-      wrapProgram "$test" --prefix GI_TYPELIB_PATH : "$out/lib/girepository-1.0"
+      wrapProgram "$test" --prefix GI_TYPELIB_PATH : "${typelibPath}"
     done
   '';
 

@@ -2,25 +2,18 @@
 
 stdenv.mkDerivation rec {
   pname = "evdi";
-  version = "-unstable-20190116";
+  version = "unstable-20200416";
 
   src = fetchFromGitHub {
     owner = "DisplayLink";
     repo = pname;
-    rev = "391f1f71e4c86fc18de27947c78e02b5e3e9f128";
-    sha256 = "147cwmk57ldchvzr06lila6av7jvcdggs9jgifqscklp9x6dc4ny";
+    rev = "dc595db636845aef39490496bc075f6bf067106c";
+    sha256 = "1yrny6jj9403z0rxbd3nxf49xc4w0rfpl7xsq03pq32pb3vlbqw7";
   };
 
   nativeBuildInputs = kernel.moduleBuildDependencies;
 
   buildInputs = [ kernel libdrm ];
-
-  patches = [
-    (fetchpatch {
-      url    = "https://crazy.dev.frugalware.org/evdi-all-in-one-fixes.patch";
-      sha256 = "03hs68v8c2akf8a4rc02m15fzyp14ay70rcx8kwg2y98qkqh7w30";
-    })
-  ];
 
   makeFlags = [
     "KVER=${kernel.modDirVersion}"
@@ -31,11 +24,12 @@ stdenv.mkDerivation rec {
 
   installPhase = ''
     install -Dm755 module/evdi.ko $out/lib/modules/${kernel.modDirVersion}/kernel/drivers/gpu/drm/evdi/evdi.ko
-    install -Dm755 library/libevdi.so.1.6.4 $out/lib/libevdi.so
+    install -Dm755 library/libevdi.so $out/lib/libevdi.so
   '';
 
   meta = with stdenv.lib; {
     description = "Extensible Virtual Display Interface";
+    maintainers = with maintainers; [ eyjhb ];
     platforms = platforms.linux;
     license = with licenses; [ lgpl21 gpl2 ];
     homepage = "https://www.displaylink.com/";

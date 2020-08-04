@@ -10,11 +10,7 @@
 with import ./build-vms.nix { inherit system pkgs minimal extraConfigurations; };
 with pkgs;
 
-let
-  jquery-ui = callPackage ./testing/jquery-ui.nix { };
-  jquery = callPackage ./testing/jquery.nix { };
-
-in rec {
+rec {
 
   inherit pkgs;
 
@@ -62,25 +58,11 @@ in rec {
 
       requiredSystemFeatures = [ "kvm" "nixos-test" ];
 
-      buildInputs = [ libxslt ];
-
       buildCommand =
         ''
-          mkdir -p $out/nix-support
+          mkdir -p $out
 
-          LOGFILE=$out/log.xml tests='exec(os.environ["testScript"])' ${driver}/bin/nixos-test-driver
-
-          # Generate a pretty-printed log.
-          xsltproc --output $out/log.html ${./test-driver/log2html.xsl} $out/log.xml
-          ln -s ${./test-driver/logfile.css} $out/logfile.css
-          ln -s ${./test-driver/treebits.js} $out/treebits.js
-          ln -s ${jquery}/js/jquery.min.js $out/
-          ln -s ${jquery}/js/jquery.js $out/
-          ln -s ${jquery-ui}/js/jquery-ui.min.js $out/
-          ln -s ${jquery-ui}/js/jquery-ui.js $out/
-
-          touch $out/nix-support/hydra-build-products
-          echo "report testlog $out log.html" >> $out/nix-support/hydra-build-products
+          LOGFILE=/dev/null tests='exec(os.environ["testScript"])' ${driver}/bin/nixos-test-driver
 
           for i in */xchg/coverage-data; do
             mkdir -p $out/coverage-data
@@ -132,7 +114,7 @@ in rec {
 
       imagemagick_tiff = imagemagick_light.override { inherit libtiff; };
 
-      # Generate onvenience wrappers for running the test driver
+      # Generate convenience wrappers for running the test driver
       # interactively with the specified network, and for starting the
       # VMs from the command line.
       driver = let warn = if skipLint then lib.warn "Linting is disabled!" else lib.id; in warn (runCommand testDriverName
@@ -175,13 +157,13 @@ in rec {
 
       nodeNames = builtins.attrNames nodes;
       invalidNodeNames = lib.filter
-        (node: builtins.match "^[A-z_][A-z0-9_]+$" node == null) nodeNames;
+        (node: builtins.match "^[A-z_]([A-z0-9_]+)?$" node == null) nodeNames;
 
     in
       if lib.length invalidNodeNames > 0 then
         throw ''
           Cannot create machines out of (${lib.concatStringsSep ", " invalidNodeNames})!
-          All machines are referenced as perl variables in the testing framework which will break the
+          All machines are referenced as python variables in the testing framework which will break the
           script when special characters are used.
 
           Please stick to alphanumeric chars and underscores as separation.
@@ -218,12 +200,12 @@ in rec {
       '';
 
       testScript = ''
-        startAll;
-        $client->waitForUnit("multi-user.target");
+        start_all()
+        client.wait_for_unit("multi-user.target")
         ${preBuild}
-        $client->succeed("env -i ${bash}/bin/bash ${buildrunner} /tmp/xchg/saved-env >&2");
+        client.succeed("env -i ${bash}/bin/bash ${buildrunner} /tmp/xchg/saved-env >&2")
         ${postBuild}
-        $client->succeed("sync"); # flush all data before pulling the plug
+        client.succeed("sync") # flush all data before pulling the plug
       '';
 
       vmRunCommand = writeText "vm-run" ''
@@ -263,9 +245,12 @@ in rec {
         { ... }:
         {
           inherit require;
+          imports = [
+            ../tests/common/auto.nix
+          ];
           virtualisation.memorySize = 1024;
           services.xserver.enable = true;
-          services.xserver.displayManager.auto.enable = true;
+          test-support.displayManager.auto.enable = true;
           services.xserver.displayManager.defaultSession = "none+icewm";
           services.xserver.windowManager.icewm.enable = true;
         };
@@ -274,7 +259,7 @@ in rec {
         machine = client;
         preBuild =
           ''
-            $client->waitForX;
+            client.wait_for_x()
           '';
       } // args);
 

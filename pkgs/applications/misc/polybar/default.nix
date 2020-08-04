@@ -1,6 +1,7 @@
 { cairo, cmake, fetchFromGitHub, libXdmcp, libpthreadstubs, libxcb, pcre, pkgconfig
 , python3, stdenv, xcbproto, xcbutil, xcbutilcursor, xcbutilimage
 , xcbutilrenderutil, xcbutilwm, xcbutilxrm, makeWrapper
+, removeReferencesTo
 
 # optional packages-- override the variables ending in 'Support' to enable or
 # disable modules
@@ -26,13 +27,13 @@ assert i3GapsSupport -> ! i3Support     && jsoncpp != null && i3-gaps != null;
 
 stdenv.mkDerivation rec {
     pname = "polybar";
-    version = "3.4.2";
+    version = "3.4.3";
 
     src = fetchFromGitHub {
       owner = pname;
       repo = pname;
       rev = version;
-      sha256 = "1ss4wzy68dpqr5a4m090nn36v8wsp4a7pj6whcxxdrrimgww5r88";
+      sha256 = "0fsfh3xv0c0hz10xqzvd01c0p0wvzcnanbyczi45zhaxfrisb39w";
       fetchSubmodules = true;
     };
 
@@ -68,17 +69,16 @@ stdenv.mkDerivation rec {
       (if i3Support || i3GapsSupport then makeWrapper else null)
     ];
 
-    postConfigure = ''
-      substituteInPlace generated-sources/settings.hpp \
-        --replace "${stdenv.cc}" "${stdenv.cc.name}"
-    '';
-
     postInstall = if (i3Support || i3GapsSupport) then ''
       wrapProgram $out/bin/polybar \
         --prefix PATH : "${if i3Support then i3 else i3-gaps}/bin"
     '' else "";
 
     nativeBuildInputs = [
-      cmake pkgconfig
+      cmake pkgconfig removeReferencesTo
     ];
+
+    postFixup = ''
+        remove-references-to -t ${stdenv.cc} $out/bin/polybar
+    '';
 }

@@ -1,13 +1,13 @@
 { lib, go, buildGoPackage, fetchFromGitHub, mkYarnPackage }:
 
 let
-  version = "2.15.2";
+  version = "2.19.3";
 
   src = fetchFromGitHub {
     rev = "v${version}";
     owner = "prometheus";
     repo = "prometheus";
-    sha256 = "0gl11qqbq57vkx226n8z4x07fwvly5f21y6dn20kjh2fxigmrb2n";
+    sha256 = "0dlvhbxahdq0x0qa0gv1rc4y5dp6lx44w280rbm9279nv1nplffh";
   };
 
   webui = mkYarnPackage {
@@ -54,9 +54,9 @@ in buildGoPackage rec {
   '';
 
   preInstall = ''
-    mkdir -p "$bin/share/doc/prometheus" "$bin/etc/prometheus"
-    cp -a $src/documentation/* $bin/share/doc/prometheus
-    cp -a $src/console_libraries $src/consoles $bin/etc/prometheus
+    mkdir -p "$out/share/doc/prometheus" "$out/etc/prometheus"
+    cp -a $src/documentation/* $out/share/doc/prometheus
+    cp -a $src/console_libraries $src/consoles $out/etc/prometheus
   '';
 
   doCheck = true;
@@ -65,7 +65,7 @@ in buildGoPackage rec {
     description = "Service monitoring system and time series database";
     homepage = "https://prometheus.io";
     license = licenses.asl20;
-    maintainers = with maintainers; [ benley fpletz globin willibutz ];
+    maintainers = with maintainers; [ benley fpletz globin willibutz Frostman ];
     platforms = platforms.unix;
   };
 }

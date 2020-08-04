@@ -4,11 +4,11 @@
 with stdenv.lib;
 stdenv.mkDerivation rec {
   pname = "clightning";
-  version = "0.8.0";
+  version = "0.8.2.1";
 
   src = fetchurl {
     url = "https://github.com/ElementsProject/lightning/releases/download/v${version}/clightning-v${version}.zip";
-    sha256 = "053e43bbe71564e9be8b2b56346a88986646ef6849a0af67cece01858b93306a";
+    sha256 = "02incjr59fv75q6hlrln9h4b5gq7ipd778scbz8b8dahj7x1a6i5";
   };
 
   enableParallelBuilding = true;
@@ -42,7 +42,7 @@ stdenv.mkDerivation rec {
       Bitcoin, enabling secure and instant transfer of funds between any two
       parties for any amount.
     '';
-    homepage = https://github.com/ElementsProject/lightning;
+    homepage = "https://github.com/ElementsProject/lightning";
     maintainers = with maintainers; [ jb55 ];
     license = licenses.mit;
     platforms = platforms.linux;

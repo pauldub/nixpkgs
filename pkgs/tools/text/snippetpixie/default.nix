@@ -1,5 +1,6 @@
 { stdenv
 , fetchFromGitHub
+, nix-update-script
 , meson
 , ninja
 , vala
@@ -18,17 +19,19 @@
 , ibus
 , json-glib
 , pantheon
+, libwnck3
+, xorg
 }:
 
 stdenv.mkDerivation rec {
   pname = "snippetpixie";
-  version = "1.2.2";
+  version = "1.3.3";
 
   src = fetchFromGitHub {
     owner = "bytepixie";
     repo = pname;
     rev = version;
-    sha256 = "096xj7n1ypr8ss8mbwd1hyypvmzw5lc0hjlj2d1x8hbjljldfd13";
+    sha256 = "0ml57j6jagqvjlpgn1bcyx08h71kcxalh69y03y2lj84x5ib8qz3";
   };
 
   nativeBuildInputs = [
@@ -52,6 +55,8 @@ stdenv.mkDerivation rec {
     dbus
     ibus
     json-glib
+    libwnck3
+    xorg.libXtst
     pantheon.granite
     pantheon.elementary-gtk-theme
     pantheon.elementary-icon-theme
@@ -65,7 +70,7 @@ stdenv.mkDerivation rec {
   '';
 
   passthru = {
-    updateScript = pantheon.updateScript {
+    updateScript = nix-update-script {
       attrPath = pname;
     };
   };
@@ -79,7 +84,7 @@ stdenv.mkDerivation rec {
 
       For example:- "spr`" expands to "Snippet Pixie rules!"
     '';
-    homepage = https://www.snippetpixie.com;
+    homepage = "https://www.snippetpixie.com";
     license = licenses.gpl2Plus;
     maintainers = with maintainers; [
       ianmjones

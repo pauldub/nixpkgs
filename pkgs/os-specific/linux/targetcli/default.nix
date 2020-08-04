@@ -2,13 +2,13 @@
 
 python.pkgs.buildPythonApplication rec {
   pname = "targetcli";
-  version = "2.1.51";
+  version = "2.1.53";
 
   src = fetchFromGitHub {
     owner = "open-iscsi";
     repo = "${pname}-fb";
     rev = "v${version}";
-    sha256 = "07i9kyr525hlk32amzgycirwgwykdbjy5fmw6ji0nnhvk2jh4arn";
+    sha256 = "1qrq7y5hnghzbxgrxgl153n8jlhw31kqjbr93jsvlvhz5b3ci750";
   };
 
   propagatedBuildInputs = with python.pkgs; [ configshell rtslib ];
@@ -20,7 +20,7 @@ python.pkgs.buildPythonApplication rec {
 
   meta = with stdenv.lib; {
     description = "A command shell for managing the Linux LIO kernel target";
-    homepage = https://github.com/open-iscsi/targetcli-fb;
+    homepage = "https://github.com/open-iscsi/targetcli-fb";
     license = licenses.asl20;
     platforms = platforms.linux;
   };

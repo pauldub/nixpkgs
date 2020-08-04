@@ -16,11 +16,11 @@
 
 buildPythonPackage rec {
   pname = "uproot";
-  version = "3.11.2";
+  version = "3.11.7";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1bn8z640408s4h04ymy0y79fm5ss2mx99mkgdbw68a80x0p6982h";
+    sha256 = "3fbf9dfe5ce996ffda3a49d16eba804b95fb05bc041fc4e7bc05317a03bf6cba";
   };
 
   nativeBuildInputs = [ pytestrunner ];
@@ -51,7 +51,7 @@ buildPythonPackage rec {
   '';
 
   meta = with lib; {
-    homepage = https://github.com/scikit-hep/uproot;
+    homepage = "https://github.com/scikit-hep/uproot";
     description = "ROOT I/O in pure Python and Numpy";
     license = licenses.bsd3;
     maintainers = with maintainers; [ ktf ];

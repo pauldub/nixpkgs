@@ -1,21 +1,23 @@
 { stdenv
 , fetchurl
-, autoreconfHook
+, fetchpatch
+, autoconf
+, automake
+, libtool
 , docbook_xml_dtd_412
 , docbook_xml_dtd_42
 , docbook_xml_dtd_43
-, docbook_xsl
+, docbook-xsl-nons
 , which
 , libxml2
 , gobject-introspection
 , gtk-doc
 , intltool
 , libxslt
-, pkgconfig
+, pkg-config
 , xmlto
 , appstream-glib
 , substituteAll
-, glibcLocales
 , yacc
 , xdg-dbus-proxy
 , p11-kit
@@ -36,10 +38,10 @@
 , desktop-file-utils
 , gtk3
 , fuse
-, malcontent
 , nixosTests
 , libsoup
 , lzma
+, zstd
 , ostree
 , polkit
 , python3
@@ -55,14 +57,14 @@
 
 stdenv.mkDerivation rec {
   pname = "flatpak";
-  version = "1.6.1";
+  version = "1.8.1";
 
   # TODO: split out lib once we figure out what to do with triggerdir
-  outputs = [ "out" "man" "doc" "installedTests" ];
+  outputs = [ "out" "dev" "man" "doc" "devdoc" "installedTests" ];
 
   src = fetchurl {
     url = "https://github.com/flatpak/flatpak/releases/download/${version}/${pname}-${version}.tar.xz";
-    sha256 = "1x3zh2xashsq1nh4s85qq45hcnwfbnwzln2wlk10g7149nia6f7w";
+    sha256 = "ZpFLZvmmQHk4bMCXpAoZ+oQZVo33+0VvLkB/D3asnq0=";
   };
 
   patches = [
@@ -70,7 +72,7 @@ stdenv.mkDerivation rec {
     # https://github.com/flatpak/flatpak/issues/1460
     (substituteAll {
       src = ./fix-test-paths.patch;
-      inherit coreutils gettext glibcLocales socat gtk3;
+      inherit coreutils gettext socat gtk3;
       smi = shared-mime-info;
       dfu = desktop-file-utils;
       hicolorIconTheme = hicolor-icon-theme;
@@ -79,7 +81,7 @@ stdenv.mkDerivation rec {
     # Hardcode paths used by Flatpak itself.
     (substituteAll {
       src = ./fix-paths.patch;
-      p11 = p11-kit;
+      p11kit = "${p11-kit.dev}/bin/p11-kit";
     })
 
     # Adapt paths exposed to sandbox for NixOS.
@@ -102,21 +104,31 @@ stdenv.mkDerivation rec {
 
     # But we want the GDK_PIXBUF_MODULE_FILE from the wrapper affect the icon validator.
     ./validate-icon-pixbuf.patch
+
+    # Fix `flatpak/test-oci-registry@{user,system}.wrap.test` installed tests.
+    # https://github.com/flatpak/flatpak/pull/3762
+    (fetchpatch {
+      url = "https://github.com/flatpak/flatpak/commit/c1447dadecd50f384b6d11dac18b014245267d00.patch";
+      sha256 = "UAA/wGr8/aMbx5MV+8Ilro2kgKkx2QOn88lDUjCgeDA=";
+    })
   ];
 
   nativeBuildInputs = [
-    autoreconfHook
+    autoconf
+    automake
+    libtool
     libxml2
+    # TODO: replace with docbook_xml_dtd_45 https://github.com/flatpak/flatpak/pull/3760
     docbook_xml_dtd_412
     docbook_xml_dtd_42
     docbook_xml_dtd_43
-    docbook_xsl
+    docbook-xsl-nons
     which
     gobject-introspection
     gtk-doc
     intltool
     libxslt
-    pkgconfig
+    pkg-config
     xmlto
     appstream-glib
     yacc
@@ -128,7 +140,6 @@ stdenv.mkDerivation rec {
     bzip2
     dbus
     dconf
-    glib
     gpgme
     json-glib
     libarchive
@@ -136,16 +147,21 @@ stdenv.mkDerivation rec {
     libseccomp
     libsoup
     lzma
-    ostree
+    # zstd # TODO: broken paths in .pc file
     polkit
     python3
     systemd
     xorg.libXau
     fuse
-    malcontent
     gsettings-desktop-schemas
     glib-networking
     librsvg # for flatpak-validate-icon
+  ];
+
+  # Required by flatpak.pc
+  propagatedBuildInputs = [
+    glib
+    ostree
   ];
 
   checkInputs = [
@@ -164,6 +180,7 @@ stdenv.mkDerivation rec {
     "--with-system-dbus-proxy=${xdg-dbus-proxy}/bin/xdg-dbus-proxy"
     "--with-dbus-config-dir=${placeholder "out"}/share/dbus-1/system.d"
     "--localstatedir=/var"
+    "--enable-gtk-doc"
     "--enable-installed-tests"
   ];
 
@@ -172,9 +189,24 @@ stdenv.mkDerivation rec {
     "installed_test_metadir=${placeholder "installedTests"}/share/installed-tests/flatpak"
   ];
 
-  postPatch = ''
+  postPatch = let
+    vsc-py = python3.withPackages (pp: [
+      pp.pyparsing
+    ]);
+  in ''
     patchShebangs buildutil
     patchShebangs tests
+    PATH=${stdenv.lib.makeBinPath [vsc-py]}:$PATH patchShebangs --build variant-schema-compiler/variant-schema-compiler
+  '';
+
+  preConfigure = ''
+    # TODO: remove the condition once autogen.sh is shipped in the tarball
+    # https://github.com/flatpak/flatpak/pull/3761
+    if [[ -f autogen.sh ]]; then
+        NOCONFIGURE=1 ./autogen.sh
+    else
+        autoreconf --install --force --verbose
+    fi
   '';
 
   passthru = {

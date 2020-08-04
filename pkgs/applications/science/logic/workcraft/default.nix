@@ -2,11 +2,11 @@
 
 stdenv.mkDerivation rec {
   pname = "workcraft";
-  version = "3.2.5";
+  version = "3.3.0";
 
   src = fetchurl {
     url = "https://github.com/workcraft/workcraft/releases/download/v${version}/workcraft-v${version}-linux.tar.gz";
-    sha256 = "11dk00b17yhk7cv8zms4nlffc0qwgsapimzr8csb89qmgabd7rj3";
+    sha256 = "072i7kan2c9f4s9jxwqr4ccsi9979c12xhwr385sbq06rwyrna85";
   };
 
   buildInputs = [ makeWrapper ];
@@ -23,7 +23,7 @@ stdenv.mkDerivation rec {
   '';
 
   meta = {
-    homepage = https://workcraft.org/;
+    homepage = "https://workcraft.org/";
     description = "Framework for interpreted graph modeling, verification and synthesis";
     platforms = stdenv.lib.platforms.linux;
     license = stdenv.lib.licenses.mit;

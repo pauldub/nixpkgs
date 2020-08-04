@@ -1,23 +1,33 @@
-{ lib, stdenv, fetchurl, python3Packages, docutils, help2man
-, acl, apktool, binutils-unwrapped, bzip2, cbfstool, cdrkit, colord, colordiff, coreutils, cpio, db, diffutils, dtc
-, e2fsprogs, file, findutils, fontforge-fonttools, fpc, gettext, ghc, ghostscriptX, giflib, gnumeric, gnupg, gnutar
-, gzip, imagemagick, jdk, libarchive, libcaca, llvm, lz4, mono, openssh, pdftk, pgpdump, poppler_utils, sng, sqlite
-, squashfsTools, tcpdump, unoconv, unzip, xxd, xz
+{ lib, stdenv, fetchurl, runCommand, makeWrapper, python3Packages, docutils, help2man
+, abootimg, acl, apktool, binutils-unwrapped, build-tools, bzip2, cbfstool, cdrkit, colord, colordiff, coreutils, cpio, db, diffutils, dtc
+, e2fsprogs, file, findutils, fontforge-fonttools, ffmpeg, fpc, gettext, ghc, ghostscriptX, giflib, gnumeric, gnupg, gnutar
+, gzip, hdf5, imagemagick, jdk, libarchive, libcaca, llvm, lz4, mono, openssh, openssl, pdftk, pgpdump, poppler_utils, qemu, R
+, sng, sqlite, squashfsTools, tcpdump, odt2txt, unzip, wabt, xxd, xz, zip, zstd
 , enableBloat ? false
 }:
 
 # Note: when upgrading this package, please run the list-missing-tools.sh script as described below!
+let
+  apksigner = runCommand "apksigner" { nativeBuildInputs = [ makeWrapper ]; } ''
+    mkdir -p $out/bin
+    makeWrapper "${jdk}/bin/java" "$out/bin/apksigner" \
+      --add-flags "-jar ${builtins.head build-tools}/libexec/android-sdk/build-tools/28.0.3/lib/apksigner.jar"
+  '';
+in
 python3Packages.buildPythonApplication rec {
   pname = "diffoscope";
-  version = "136";
+  version = "153";
 
   src = fetchurl {
     url    = "https://diffoscope.org/archive/diffoscope-${version}.tar.bz2";
-    sha256 = "0an9c63xgy1bvqnpnn9mfphsq1qx8ba69yk15nqa9p78iqq2hf4h";
+    sha256 = "1wdmm7qdw15wxj26kxapnkyaa32yf3ywngak0smfb4nbzcy45dzm";
   };
+
+  outputs = [ "out" "man" ];
 
   patches = [
     ./ignore_links.patch
+    ./skip-failing-test.patch
   ];
 
   postPatch = ''
@@ -33,23 +43,24 @@ python3Packages.buildPythonApplication rec {
   # Most of the non-Python dependencies here are optional command-line tools for various file-format parsers.
   # To help figuring out what's missing from the list, run: ./pkgs/tools/misc/diffoscope/list-missing-tools.sh
   #
-  # Still missing these tools: abootimg docx2txt dumpxsb enjarify js-beautify lipo oggDump otool procyon-decompiler Rscript wasm2wat zipnode
-  # Also these libraries: python3-guestfs
+  # Still missing these tools: docx2txt dumppdf dumpxsb enjarify lipo ocamlobjinfo oggDump otool procyon
   pythonPath = [
       binutils-unwrapped bzip2 colordiff coreutils cpio db diffutils
       dtc e2fsprogs file findutils fontforge-fonttools gettext gnutar gzip
-      libarchive libcaca lz4 pgpdump sng sqlite squashfsTools unzip xxd xz
+      libarchive libcaca lz4 openssl pgpdump sng sqlite squashfsTools unzip xxd
+      xz zip zstd
     ]
-    ++ (with python3Packages; [ debian libarchive-c python_magic tlsh rpm progressbar33 ])
+    ++ (with python3Packages; [
+      argcomplete debian defusedxml jsondiff jsbeautifier libarchive-c
+      python_magic progressbar33 pypdf2 rpm tlsh
+    ])
     ++ lib.optionals stdenv.isLinux [ python3Packages.pyxattr acl cdrkit ]
-    ++ lib.optionals enableBloat [
-      apktool cbfstool colord fpc ghc ghostscriptX giflib gnupg gnumeric imagemagick
-      llvm jdk mono openssh pdftk poppler_utils tcpdump unoconv
-      python3Packages.guestfs
-    ];
+    ++ lib.optionals enableBloat ([
+      abootimg apksigner apktool cbfstool colord ffmpeg fpc ghc ghostscriptX giflib gnupg gnumeric
+      hdf5 imagemagick llvm jdk mono odt2txt openssh pdftk poppler_utils qemu R tcpdump wabt
+    ] ++ (with python3Packages; [ binwalk guestfs h5py ]));
 
-  doCheck = false; # Calls 'mknod' in squashfs tests, which needs root
-  checkInputs = with python3Packages; [ pytest ];
+  checkInputs = with python3Packages; [ pytest ] ++ pythonPath;
 
   postInstall = ''
     make -C doc
@@ -69,9 +80,9 @@ python3Packages.buildPythonApplication rec {
       diffoscope is developed as part of the "reproducible builds" Debian
       project and was formerly known as "debbindiff".
     '';
-    homepage    = https://wiki.debian.org/ReproducibleBuilds;
+    homepage    = "https://diffoscope.org/";
     license     = licenses.gpl3Plus;
-    maintainers = with maintainers; [ dezgeg ];
+    maintainers = with maintainers; [ dezgeg ma27 danielfullmer ];
     platforms   = platforms.unix;
   };
 }

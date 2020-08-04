@@ -2,7 +2,7 @@
 
 let
   baseName = "scalafmt";
-  version = "2.3.2";
+  version = "2.6.2";
   deps = stdenv.mkDerivation {
     name = "${baseName}-deps-${version}";
     buildCommand = ''
@@ -13,7 +13,7 @@ let
     '';
     outputHashMode = "recursive";
     outputHashAlgo = "sha256";
-    outputHash     = "0q42qa6k4wqnfj710lcarkg8hv7wpvfhvjh9ygil1ah8936xmj72";
+    outputHash     = "1q2bsc6vqgbgzg8hcz8pn6vl3263ghjfbkn93vijvmz0ivc806j4";
   };
 in
 stdenv.mkDerivation {
@@ -37,7 +37,7 @@ stdenv.mkDerivation {
 
   meta = with stdenv.lib; {
     description = "Opinionated code formatter for Scala";
-    homepage = http://scalameta.org/scalafmt;
+    homepage = "http://scalameta.org/scalafmt";
     license = licenses.asl20;
     maintainers = [ maintainers.markus1189 ];
   };

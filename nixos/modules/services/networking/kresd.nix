@@ -32,9 +32,9 @@ let
     + cfg.extraConfig
   );
 
-  package = pkgs.knot-resolver.override {
-    extraFeatures = cfg.listenDoH != [];
-  };
+  package = if cfg.listenDoH == []
+    then pkgs.knot-resolver # never force `extraFeatures = false`
+    else pkgs.knot-resolver.override { extraFeatures = true; };
 in {
   meta.maintainers = [ maintainers.vcunat /* upstream developer */ ];
 
@@ -134,8 +134,7 @@ in {
       CacheDirectoryMode = "0750";
     };
 
-    environment.etc."tmpfiles.d/knot-resolver.conf".source =
-      "${package}/lib/tmpfiles.d/knot-resolver.conf";
+    systemd.tmpfiles.packages = [ package ];
 
     # Try cleaning up the previously default location of cache file.
     # Note that /var/cache/* should always be safe to remove.

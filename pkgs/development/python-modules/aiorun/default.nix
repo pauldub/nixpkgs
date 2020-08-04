@@ -2,6 +2,7 @@
 , buildPythonPackage
 , fetchFromGitHub
 , isPy27
+, pygments
 , pytest
 , pytestcov
 , uvloop
@@ -9,7 +10,7 @@
 
 buildPythonPackage rec {
   pname = "aiorun";
-  version = "2020.1.3";
+  version = "2020.6.1";
   format = "flit";
 
   disabled = isPy27;
@@ -18,8 +19,12 @@ buildPythonPackage rec {
     owner = "cjrh";
     repo = pname;
     rev = "v${version}";
-    sha256 = "0ka0pj6xr47j7rw6kd5mkrr5jyhn631pfpd95ig7vbln4434qnb4";
+    sha256 = "00mq5ylhhdfdqrh7zdqabf3wy85jrkqvgfb1421ll46fsjim2d14";
   };
+
+  propagatedBuildInputs = [
+    pygments
+  ];
 
   checkInputs = [
     pytest
@@ -38,7 +43,7 @@ buildPythonPackage rec {
 
   meta = with lib; {
     description = "Boilerplate for asyncio applications";
-    homepage = https://github.com/cjrh/aiorun;
+    homepage = "https://github.com/cjrh/aiorun";
     license = licenses.asl20;
     maintainers = [ maintainers.costrouc ];
   };

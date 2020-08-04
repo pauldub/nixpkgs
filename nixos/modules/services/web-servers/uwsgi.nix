@@ -32,7 +32,7 @@ let
               inherit plugins;
             } // removeAttrs c [ "type" "pythonPackages" ]
               // optionalAttrs (python != null) {
-                pythonpath = "${pythonEnv}/${python.sitePackages}";
+                pyhome = "${pythonEnv}";
                 env =
                   # Argh, uwsgi expects list of key-values there instead of a dictionary.
                   let env' = c.env or [];
@@ -79,7 +79,25 @@ in {
       };
 
       instance = mkOption {
-        type = types.attrs;
+        type =  with lib.types; let
+          valueType = nullOr (oneOf [
+            bool
+            int
+            float
+            str
+            (lazyAttrsOf valueType)
+            (listOf valueType)
+            (mkOptionType {
+              name = "function";
+              description = "function";
+              check = x: isFunction x;
+              merge = mergeOneOption;
+            })
+          ]) // {
+            description = "Json value or lambda";
+            emptyValue.value = {};
+          };
+        in valueType;
         default = {
           type = "normal";
         };

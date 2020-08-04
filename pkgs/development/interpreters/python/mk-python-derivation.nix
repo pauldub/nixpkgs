@@ -16,7 +16,10 @@
 , pipInstallHook
 , pythonCatchConflictsHook
 , pythonImportsCheckHook
+, pythonNamespacesHook
+, pythonRecompileBytecodeHook
 , pythonRemoveBinBytecodeHook
+, pythonRemoveTestsDirHook
 , setuptoolsBuildHook
 , setuptoolsCheckHook
 , wheelUnpackHook
@@ -108,6 +111,8 @@ let
     python
     wrapPython
     ensureNewerSourcesForZipFilesHook  # move to wheel installer (pip) or builder (setuptools, flit, ...)?
+    pythonRecompileBytecodeHook  # Remove when solved https://github.com/NixOS/nixpkgs/issues/81441
+    pythonRemoveTestsDirHook
   ] ++ lib.optionals catchConflicts [
     setuptools pythonCatchConflictsHook
   ] ++ lib.optionals removeBinBytecode [
@@ -129,6 +134,9 @@ let
   ] ++ lib.optionals (stdenv.buildPlatform == stdenv.hostPlatform) [
     # This is a test, however, it should be ran independent of the checkPhase and checkInputs
     pythonImportsCheckHook
+  ] ++ lib.optionals (python.pythonAtLeast "3.3") [
+    # Optionally enforce PEP420 for python3
+    pythonNamespacesHook
   ] ++ nativeBuildInputs;
 
   buildInputs = buildInputs ++ pythonPath;
@@ -156,6 +164,9 @@ let
 
   # Python packages built through cross-compilation are always for the host platform.
   disallowedReferences = lib.optionals (python.stdenv.hostPlatform != python.stdenv.buildPlatform) [ python.pythonForBuild ];
+
+  # For now, revert recompilation of bytecode.
+  dontUsePythonRecompileBytecode = true;
 
   meta = {
     # default to python's platforms

@@ -22,9 +22,13 @@ let
 
   bitbucket-server-cli = callPackage ./bitbucket-server-cli { };
 
-  darcsToGit = callPackage ./darcs-to-git { };
+  bump2version = pkgs.python37Packages.callPackage ./bump2version { };
 
-  delta = callPackage ./delta { };
+  darcs-to-git = callPackage ./darcs-to-git { };
+
+  delta = callPackage ./delta {
+    inherit (darwin.apple_sdk.frameworks) Security;
+  };
 
   diff-so-fancy = callPackage ./diff-so-fancy { };
 
@@ -37,25 +41,6 @@ let
   git-absorb = callPackage ./git-absorb {
     inherit (darwin.apple_sdk.frameworks) Security;
   };
-
-  git-appraise = callPackage ./git-appraise {};
-
-  git-fame = callPackage ./git-fame {};
-
-  gita = python3Packages.callPackage ./gita {};
-
-  # The full-featured Git.
-  gitFull = gitBase.override {
-    svnSupport = true;
-    guiSupport = true;
-    sendEmailSupport = true;
-    withLibsecret = !stdenv.isDarwin;
-  };
-
-  # Git with SVN support, but without GUI.
-  gitSVN = lowPrio (appendToName "with-svn" (gitBase.override {
-    svnSupport = true;
-  }));
 
   git-annex = pkgs.haskellPackages.git-annex;
 
@@ -78,12 +63,18 @@ let
 
   git-annex-utils = callPackage ./git-annex-utils { };
 
+  git-appraise = callPackage ./git-appraise {};
+
   git-bug = callPackage ./git-bug { };
 
   # support for bugzilla
   git-bz = callPackage ./git-bz { };
 
+  git-cinnabar = callPackage ./git-cinnabar { };
+
   git-codeowners = callPackage ./git-codeowners { };
+
+  git-codereview = callPackage ./git-codereview { };
 
   git-cola = callPackage ./git-cola { };
 
@@ -93,7 +84,23 @@ let
     inherit (darwin.apple_sdk.frameworks) CoreFoundation Security;
   };
 
+  git-doc = lib.addMetaAttrs {
+    description = "Additional documentation for Git";
+    longDescription = ''
+      This package contains additional documentation (HTML and text files) that
+      is referenced in the man pages of Git.
+    '';
+  } gitFull.doc;
+
   git-extras = callPackage ./git-extras { };
+
+  git-fame = callPackage ./git-fame {};
+
+  git-fast-export = callPackage ./fast-export { };
+
+  git-filter-repo = callPackage ./git-filter-repo {
+    pythonPackages = python3Packages;
+  };
 
   git-gone = callPackage ./git-gone {
     inherit (darwin.apple_sdk.frameworks) Security;
@@ -111,6 +118,8 @@ let
 
   git-machete = python3Packages.callPackage ./git-machete { };
 
+  git-my = callPackage ./git-my { };
+
   git-octopus = callPackage ./git-octopus { };
 
   git-open = callPackage ./git-open { };
@@ -120,6 +129,8 @@ let
   git-recent = callPackage ./git-recent {
     utillinux = if stdenv.isLinux then utillinuxMinimal else utillinux;
   };
+
+  git-remote-gcrypt = callPackage ./git-remote-gcrypt { };
 
   git-remote-hg = callPackage ./git-remote-hg { };
 
@@ -135,11 +146,19 @@ let
 
   git-subrepo = callPackage ./git-subrepo { };
 
+  git-subset = callPackage ./git-subset {
+    inherit (darwin.apple_sdk.frameworks) Security;
+  };
+
   git-subtrac = callPackage ./git-subtrac { };
 
   git-sync = callPackage ./git-sync { };
 
   git-test = callPackage ./git-test { };
+
+  git-trim = callPackage ./git-trim {
+    inherit (darwin.apple_sdk.frameworks) Security;
+  };
 
   git-workspace = callPackage ./git-workspace {
     inherit (darwin.apple_sdk.frameworks) Security;
@@ -147,55 +166,79 @@ let
 
   git2cl = callPackage ./git2cl { };
 
-  gitFastExport = callPackage ./fast-export { };
+  # The full-featured Git.
+  gitFull = gitBase.override {
+    svnSupport = true;
+    guiSupport = true;
+    sendEmailSupport = true;
+    withLibsecret = !stdenv.isDarwin;
+  };
 
-  gitRemoteGcrypt = callPackage ./git-remote-gcrypt { };
+  # Git with SVN support, but without GUI.
+  gitSVN = lowPrio (appendToName "with-svn" (gitBase.override {
+    svnSupport = true;
+  }));
+
+  gita = python3Packages.callPackage ./gita {};
+
+  gitbatch = callPackage ./gitbatch { };
 
   gitflow = callPackage ./gitflow { };
 
+  gitin = callPackage ./gitin { };
+
   gitstatus = callPackage ./gitstatus { };
+
+  gitui = callPackage ./gitui {
+    inherit (darwin.apple_sdk.frameworks) Security;
+  };
 
   grv = callPackage ./grv { };
 
-  hub = callPackage ./hub {
-    inherit (darwin) Security;
-  };
-
-  hubUnstable = throw "use gitAndTools.hub instead";
+  hub = callPackage ./hub { };
 
   lab = callPackage ./lab { };
 
   lefthook = callPackage ./lefthook { };
 
-  pre-commit = pkgs.python3Packages.toPythonApplication pkgs.python3Packages.pre-commit;
+  legit = callPackage ./legit { };
 
   pass-git-helper = python3Packages.callPackage ./pass-git-helper { };
 
+  pre-commit = pkgs.python3Packages.toPythonApplication pkgs.python3Packages.pre-commit;
+
   qgit = qt5.callPackage ./qgit { };
 
-  stgit = callPackage ./stgit {
-  };
+  scmpuff = callPackage ./scmpuff { };
+
+  stgit = callPackage ./stgit { };
 
   subgit = callPackage ./subgit { };
+
+  svn-all-fast-export = libsForQt5.callPackage ./svn-all-fast-export { };
 
   svn2git = callPackage ./svn2git {
     git = gitSVN;
   };
 
-  svn-all-fast-export = libsForQt5.callPackage ./svn-all-fast-export { };
-
   thicket = callPackage ./thicket { };
 
   tig = callPackage ./tig { };
 
-  topGit = callPackage ./topgit { };
+  top-git = callPackage ./topgit { };
 
   transcrypt = callPackage ./transcrypt { };
 
+  ydiff = pkgs.python3.pkgs.toPythonApplication pkgs.python3.pkgs.ydiff;
+
 } // lib.optionalAttrs (config.allowAliases or true) (with self; {
   # aliases
+  darcsToGit = darcs-to-git;
   gitAnnex = git-annex;
+  gitFastExport = git-fast-export;
+  gitRemoteGcrypt = git-remote-gcrypt;
   svn_all_fast_export = svn-all-fast-export;
+  topGit = top-git;
 });
 in
   self

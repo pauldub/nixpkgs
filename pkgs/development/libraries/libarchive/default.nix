@@ -1,6 +1,6 @@
 {
   fetchFromGitHub, stdenv, pkgconfig, autoreconfHook,
-  acl, attr, bzip2, e2fsprogs, libxml2, lzo, openssl, sharutils, xz, zlib,
+  acl, attr, bzip2, e2fsprogs, libxml2, lzo, openssl, sharutils, xz, zlib, zstd,
 
   # Optional but increases closure only negligibly.
   xarSupport ? true,
@@ -10,19 +10,19 @@ assert xarSupport -> libxml2 != null;
 
 stdenv.mkDerivation rec {
   pname = "libarchive";
-  version = "3.4.1";
+  version = "3.4.3";
 
   src = fetchFromGitHub {
     owner = "libarchive";
     repo = "libarchive";
     rev = "v${version}";
-    sha256 = "0g0kzfl01zy1aabr5jcrh8480mb16vh3pacdhg6mm2bdv2f5w8z1";
+    sha256 = "1y0v03p6zyv6plr2p0pid1qfgmk8hd427spj8xa93mcdmq5yc3s0";
   };
 
   outputs = [ "out" "lib" "dev" ];
 
   nativeBuildInputs = [ pkgconfig autoreconfHook ];
-  buildInputs = [ sharutils zlib bzip2 openssl xz lzo ]
+  buildInputs = [ sharutils zlib bzip2 openssl xz lzo zstd ]
     ++ stdenv.lib.optionals stdenv.isLinux [ e2fsprogs attr acl ]
     ++ stdenv.lib.optional xarSupport libxml2;
 
@@ -52,7 +52,7 @@ stdenv.mkDerivation rec {
       compressions formats including (but not limited to) tar, shar, cpio, zip, and
       compressed with gzip, bzip2, lzma, xz, ...
     '';
-    homepage = http://libarchive.org;
+    homepage = "http://libarchive.org";
     license = stdenv.lib.licenses.bsd3;
     platforms = with stdenv.lib.platforms; all;
     maintainers = with stdenv.lib.maintainers; [ jcumming ];

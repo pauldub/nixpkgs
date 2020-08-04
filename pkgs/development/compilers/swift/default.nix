@@ -26,6 +26,7 @@
 , git
 , libgit2
 , fetchFromGitHub
+, fetchpatch
 , findutils
 , makeWrapper
 , gnumake
@@ -181,6 +182,9 @@ stdenv.mkDerivation {
   '';
 
   patchPhase = ''
+    # Glibc 2.31 fix
+    patch -p1 -i ${./patches/swift-llvm.patch}
+
     # Just patch all the things for now, we can focus this later
     patchShebangs $SWIFT_SOURCE_ROOT
 
@@ -224,6 +228,15 @@ stdenv.mkDerivation {
     # uuid.h is not part of glibc, but of libuuid
     sed -i 's|''${GLIBC_INCLUDE_PATH}/uuid/uuid.h|${libuuid.dev}/include/uuid/uuid.h|' swift/stdlib/public/Platform/glibc.modulemap.gyb
 
+    # Compatibility with glibc 2.30
+    # Adapted from https://github.com/apple/swift-package-manager/pull/2408
+    patch -p1 -d swiftpm -i ${./patches/swift-package-manager-glibc-2.30.patch}
+    # https://github.com/apple/swift/pull/27288
+    patch -p1 -d swift -i ${fetchpatch {
+      url = "https://github.com/apple/swift/commit/f968f4282d53f487b29cf456415df46f9adf8748.patch";
+      sha256 = "1aa7l66wlgip63i4r0zvi9072392bnj03s4cn12p706hbpq0k37c";
+    }}
+
     PREFIX=''${out/#\/}
     substituteInPlace indexstore-db/Utilities/build-script-helper.py \
       --replace usr "$PREFIX"
@@ -247,8 +260,8 @@ stdenv.mkDerivation {
   '';
 
   buildPhase = ''
-    # gcc-6.4.0/include/c++/6.4.0/cstdlib:75:15: fatal error: 'stdlib.h' file not found
-    export NIX_CFLAGS_COMPILE="$( echo ${clang.default_cxx_stdlib_compile} ) $NIX_CFLAGS_COMPILE"
+    # explicitly include C++ headers to prevent errors where stdlib.h is not found from cstdlib
+    export NIX_CFLAGS_COMPILE="$(< ${clang}/nix-support/libcxx-cxxflags) $NIX_CFLAGS_COMPILE"
     # During the Swift build, a full local LLVM build is performed and the resulting clang is invoked.
     # This compiler is not using the Nix wrappers, so it needs some help to find things.
     export NIX_LDFLAGS_BEFORE="-rpath ${clang.cc.gcc.lib}/lib -L${clang.cc.gcc.lib}/lib $NIX_LDFLAGS_BEFORE"
@@ -307,7 +320,7 @@ stdenv.mkDerivation {
 
   meta = with stdenv.lib; {
     description = "The Swift Programming Language";
-    homepage = https://github.com/apple/swift;
+    homepage = "https://github.com/apple/swift";
     maintainers = with maintainers; [ dtzWill ];
     license = licenses.asl20;
     # Swift doesn't support 32bit Linux, unknown on other platforms.

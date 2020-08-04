@@ -17,13 +17,13 @@
 
  python3.pkgs.buildPythonApplication rec {
   name = "accerciser-${version}";
-  version = "3.34.3";
+  version = "3.36.2";
 
   format = "other";
 
   src = fetchurl {
     url = "mirror://gnome/sources/accerciser/${stdenv.lib.versions.majorMinor version}/${name}.tar.xz";
-    sha256 = "1ixyxfv2h5921x82d0r39v952ggclnf2xba5li01qmshl6b21kcc";
+    sha256 = "1n6glngvybg5im9diq6v5wv1in699nmm34v9yvlbjnsb1k2hb4hg";
   };
 
   nativeBuildInputs = [
@@ -64,9 +64,9 @@
   };
 
   meta = with stdenv.lib; {
-    homepage = https://wiki.gnome.org/Apps/Accerciser;
+    homepage = "https://wiki.gnome.org/Apps/Accerciser";
     description = "Interactive Python accessibility explorer";
-    maintainers = gnome3.maintainers;
+    maintainers = teams.gnome.members;
     license = licenses.bsd3;
     platforms = platforms.linux;
   };

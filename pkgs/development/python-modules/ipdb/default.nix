@@ -7,12 +7,12 @@
 
 buildPythonPackage rec {
   pname = "ipdb";
-  version = "0.12.3";
+  version = "0.13.3";
   disabled = isPyPy;  # setupterm: could not find terminfo database
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1zbj7xjhkr44grfyv1hb7ff5n1218f9jjabgzica29vh7c74m6jx";
+    sha256 = "0y3yk5k2yszcwxsjinvf40b1wl8wi8l6kv7pl9jmx9j53hk6vx6n";
   };
 
   propagatedBuildInputs = [ ipython ];
@@ -22,7 +22,7 @@ buildPythonPackage rec {
   '';
 
   meta = with stdenv.lib; {
-    homepage = https://github.com/gotcha/ipdb;
+    homepage = "https://github.com/gotcha/ipdb";
     description = "IPython-enabled pdb";
     license = licenses.bsd0;
     maintainers = [ maintainers.costrouc ];

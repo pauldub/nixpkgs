@@ -3,13 +3,13 @@
 
 stdenv.mkDerivation rec {
   pname = "libmatroska";
-  version = "1.5.2";
+  version = "1.6.0";
 
   src = fetchFromGitHub {
     owner  = "Matroska-Org";
     repo   = "libmatroska";
     rev    = "release-${version}";
-    sha256 = "057iib6p62x31g1ikdjsjzmqzjlajqx6p74h7y4r524pzgb27fzy";
+    sha256 = "118xxdgd3gkwamf59ac2c90s52pz5r0g2jmlrsj1kppybxka5f07";
   };
 
   nativeBuildInputs = [ cmake pkgconfig ];
@@ -22,7 +22,7 @@ stdenv.mkDerivation rec {
 
   meta = with stdenv.lib; {
     description = "A library to parse Matroska files";
-    homepage = https://matroska.org/;
+    homepage = "https://matroska.org/";
     license = licenses.lgpl21;
     maintainers = with maintainers; [ spwhitt ];
     platforms = platforms.unix;

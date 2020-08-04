@@ -8,11 +8,11 @@ let
 
 in python3Packages.buildPythonApplication rec {
   pname = "mercurial";
-  version = "5.2.2";
+  version = "5.4.2";
 
   src = fetchurl {
     url = "https://mercurial-scm.org/release/mercurial-${version}.tar.gz";
-    sha256 = "0fy00q0k4f0q64jjlnb7cl6m0sglivq9jgdddsp5sywc913zzigz";
+    sha256 = "0ls8nwx3nz26pibphw54fg8pxqb365zmmqx95lqrxqqyf3d972sw";
   };
 
   format = "other";
@@ -56,8 +56,8 @@ in python3Packages.buildPythonApplication rec {
   meta = {
     inherit version;
     description = "A fast, lightweight SCM system for very large distributed projects";
-    homepage = https://www.mercurial-scm.org;
-    downloadPage = https://www.mercurial-scm.org/release/;
+    homepage = "https://www.mercurial-scm.org";
+    downloadPage = "https://www.mercurial-scm.org/release/";
     license = stdenv.lib.licenses.gpl2;
     maintainers = [ stdenv.lib.maintainers.eelco ];
     updateWalker = true;

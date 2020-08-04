@@ -2,16 +2,16 @@
 
 buildPythonPackage rec {
   pname = "phonenumbers";
-  version = "8.11.3";
+  version = "8.12.6";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1rh0860ml00kw5c4b4r31wz5s8cmd5mpxx5slypdgljk4ralyg6p";
+    sha256 = "02yfyphrrlx00r7s2j522kjszchq6ql8gb33lasm6q8wwy7hfcnk";
   };
 
   meta = {
     description = "Python version of Google's common library for parsing, formatting, storing and validating international phone numbers";
-    homepage    = https://github.com/daviddrysdale/python-phonenumbers;
+    homepage    = "https://github.com/daviddrysdale/python-phonenumbers";
     license     = stdenv.lib.licenses.asl20;
     maintainers = with stdenv.lib.maintainers; [ fadenb ];
   };

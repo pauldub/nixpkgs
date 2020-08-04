@@ -2,16 +2,16 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "gnvim-unwrapped";
-  version = "0.1.5";
+  version = "0.1.6";
 
   src = fetchFromGitHub {
     owner = "vhakulinen";
     repo = "gnvim";
-    rev = version;
-    sha256 = "11gb59lhc1sp5dxj2fdm6072f4nxxay0war3kmchdwsk41nvxlrh";
+    rev = "v${version}";
+    sha256 = "1cc3yk04v9icdjr5cn58mqc3ba1wqmlzhf9ly7biy9m8yk30w9y0";
   };
 
-  cargoSha256 = "00r5jf5qdw02vcv3522qqrnwj14mip0l58prcncbvyg4pxlm2rb2";
+  cargoSha256 = "1fyn8nsabzrfl9ykf2gk2p8if0yjp6k0ybrmp0pw67pbwaxpb9ym";
 
   buildInputs = [ gtk webkitgtk ];
 
@@ -33,6 +33,10 @@ rustPlatform.buildRustPackage rec {
     EOF
   '';
 
+  buildPhase = ''
+    make build
+  '';
+
   installPhase = ''
     make install PREFIX="${placeholder "out"}"
   '';
@@ -40,8 +44,7 @@ rustPlatform.buildRustPackage rec {
   meta = with stdenv.lib; {
     description = "GUI for neovim, without any web bloat";
     homepage = "https://github.com/vhakulinen/gnvim";
-    license     = licenses.mit;
-    maintainers =  with maintainers; [ minijackson ];
-    inherit version;
+    license = licenses.mit;
+    maintainers = with maintainers; [ minijackson ];
   };
 }

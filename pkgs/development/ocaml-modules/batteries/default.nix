@@ -1,14 +1,20 @@
-{ stdenv, fetchurl, ocaml, findlib, ocamlbuild, qtest, num }:
+{ stdenv, fetchurl, fetchpatch, ocaml, findlib, ocamlbuild, qtest, num }:
 
-let version = "2.11.0"; in
+let version = "3.0.0"; in
 
 stdenv.mkDerivation {
   name = "ocaml${ocaml.version}-batteries-${version}";
 
   src = fetchurl {
     url = "https://github.com/ocaml-batteries-team/batteries-included/releases/download/v${version}/batteries-${version}.tar.gz";
-    sha256 = "0swdnm9c3sd3yzzyg7yh1lkqhfikmga4fzx2416ja1q62nv26j53";
+    sha256 = "0d833amm4p0pczgl7wriv99f3r5r6345p5gi9d97sm0hqx27vzwi";
   };
+
+  # Fixes tests with OCaml 4.10
+  patches = [(fetchpatch {
+    url = "https://github.com/ocaml-batteries-team/batteries-included/commit/6d8d67f9fb48181be3d527b32df15899b00cd5dd.patch";
+    sha256 = "0msk8c5bjm6gm011i75b1rza332i1r4adj58qzli6gyjlvfj1hx4";
+  })];
 
   buildInputs = [ ocaml findlib ocamlbuild qtest ];
   propagatedBuildInputs = [ num ];
@@ -19,7 +25,7 @@ stdenv.mkDerivation {
   createFindlibDestdir = true;
 
   meta = {
-    homepage = http://batteries.forge.ocamlcore.org/;
+    homepage = "http://batteries.forge.ocamlcore.org/";
     description = "OCaml Batteries Included";
     longDescription = ''
       A community-driven effort to standardize on an consistent, documented,

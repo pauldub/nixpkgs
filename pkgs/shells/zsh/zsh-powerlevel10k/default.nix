@@ -3,14 +3,15 @@
 # To make use of this derivation, use
 # `programs.zsh.promptInit = "source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme";`
 
-stdenv.mkDerivation {
+stdenv.mkDerivation rec {
   pname = "powerlevel10k";
-  version = "1.1";
+  version = "1.11.0";
+
   src = fetchFromGitHub {
     owner = "romkatv";
     repo = "powerlevel10k";
-    rev = "9d9c50611da19044370ee759e593ccadbad32a6a";
-    sha256 = "0jl4jamh7i8w7lp3qbbakh1wsyrrmslsrjwh9jgyvw50a83hp6fj";
+    rev = "v${version}";
+    sha256 = "1z6abvp642n40biya88n86ff1wiry00dlwawqwxp7q5ds55jhbv1";
   };
 
   patches = [
@@ -24,8 +25,7 @@ stdenv.mkDerivation {
     install -D powerlevel10k.zsh-theme --target-directory=$out/share/zsh-powerlevel10k
     install -D config/* --target-directory=$out/share/zsh-powerlevel10k/config
     install -D internal/* --target-directory=$out/share/zsh-powerlevel10k/internal
-    rm -r gitstatus/bin
-    install -D gitstatus/* --target-directory=$out/share/zsh-powerlevel10k/gitstatus
+    cp -R gitstatus $out/share/zsh-powerlevel10k/gitstatus
   '';
 
   meta = {

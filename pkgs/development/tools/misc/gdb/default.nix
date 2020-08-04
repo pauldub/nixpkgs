@@ -18,7 +18,7 @@
 
 let
   basename = "gdb-${version}";
-  version = "8.3.1";
+  version = "9.2";
 in
 
 assert pythonSupport -> python3 != null;
@@ -31,7 +31,7 @@ stdenv.mkDerivation rec {
 
   src = fetchurl {
     url = "mirror://gnu/gdb/${basename}.tar.xz";
-    sha256 = "1i2pjwaafrlz7wqm40b4znr77ai32rjsxkpl2az38yyarpbv8m8y";
+    sha256 = "0mf5fn8v937qwnal4ykn3ji1y2sxk0fa1yfqi679hxmpg6pdf31n";
   };
 
   postPatch = if stdenv.isDarwin then ''
@@ -65,6 +65,13 @@ stdenv.mkDerivation rec {
   # TODO(@Ericson2314): Always pass "--target" and always prefix.
   configurePlatforms = [ "build" "host" ] ++ stdenv.lib.optional (stdenv.targetPlatform != stdenv.hostPlatform) "target";
 
+  # GDB have to be built out of tree.
+  preConfigure = ''
+    mkdir _build
+    cd _build
+  '';
+  configureScript = "../configure";
+
   configureFlags = with stdenv.lib; [
     "--enable-targets=all" "--enable-64-bit-bfd"
     "--disable-install-libbfd"
@@ -95,11 +102,11 @@ stdenv.mkDerivation rec {
       program was doing at the moment it crashed.
     '';
 
-    homepage = https://www.gnu.org/software/gdb/;
+    homepage = "https://www.gnu.org/software/gdb/";
 
     license = stdenv.lib.licenses.gpl3Plus;
 
     platforms = with platforms; linux ++ cygwin ++ darwin;
-    maintainers = with maintainers; [ pierron globin ];
+    maintainers = with maintainers; [ pierron globin lsix ];
   };
 }

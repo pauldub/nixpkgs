@@ -8,11 +8,11 @@ let
 in
 
 stdenv.mkDerivation rec {
-  name = "ntp-4.2.8p13";
+  name = "ntp-4.2.8p15";
 
   src = fetchurl {
     url = "https://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/${name}.tar.gz";
-    sha256 = "0f1a4fya7v5s0426nim8ydvvlcashb8hicgs9xlm76ndrz7751r8";
+    sha256 = "06cwhimm71safmwvp6nhxp6hvxsg62whnbgbgiflsqb8mgg40n7n";
   };
 
   # The hardcoded list of allowed system calls for seccomp is
@@ -40,11 +40,11 @@ stdenv.mkDerivation rec {
   '';
 
   meta = with stdenv.lib; {
-    homepage = http://www.ntp.org/;
+    homepage = "http://www.ntp.org/";
     description = "An implementation of the Network Time Protocol";
     license = {
       # very close to isc and bsd2
-      url = https://www.eecis.udel.edu/~mills/ntp/html/copyright.html;
+      url = "https://www.eecis.udel.edu/~mills/ntp/html/copyright.html";
     };
     maintainers = with maintainers; [ eelco thoughtpolice ];
     platforms = platforms.linux;

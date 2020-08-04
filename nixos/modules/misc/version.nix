@@ -4,10 +4,6 @@ with lib;
 
 let
   cfg = config.system.nixos;
-
-  gitRepo      = "${toString pkgs.path}/.git";
-  gitRepoValid = lib.pathIsGitRepo gitRepo;
-  gitCommitId  = lib.substring 0 7 (commitIdFromGitRepo gitRepo);
 in
 
 {
@@ -80,7 +76,7 @@ in
     defaultChannel = mkOption {
       internal = true;
       type = types.str;
-      default = https://nixos.org/channels/nixos-unstable;
+      default = "https://nixos.org/channels/nixos-unstable";
       description = "Default NixOS channel to which the root user is subscribed.";
     };
 
@@ -98,8 +94,6 @@ in
       # These defaults are set here rather than up there so that
       # changing them would not rebuild the manual
       version = mkDefault (cfg.release + cfg.versionSuffix);
-      revision      = mkIf gitRepoValid (mkDefault            gitCommitId);
-      versionSuffix = mkIf gitRepoValid (mkDefault (".git." + gitCommitId));
     };
 
     # Generate /etc/os-release.  See
@@ -115,8 +109,8 @@ in
         PRETTY_NAME="NixOS ${cfg.release} (${cfg.codeName})"
         LOGO="nix-snowflake"
         HOME_URL="https://nixos.org/"
-        DOCUMENTATION_URL="https://nixos.org/nixos/manual/index.html"
-        SUPPORT_URL="https://nixos.org/nixos/support.html"
+        DOCUMENTATION_URL="https://nixos.org/learn.html"
+        SUPPORT_URL="https://nixos.org/community.html"
         BUG_REPORT_URL="https://github.com/NixOS/nixpkgs/issues"
       '';
 

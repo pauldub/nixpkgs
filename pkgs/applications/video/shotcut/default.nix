@@ -3,21 +3,19 @@
 , qtquickcontrols, qtgraphicaleffects, libmlt, qmake, qttools
 }:
 
-assert stdenv.lib.versionAtLeast libmlt.version "6.18.0";
-assert stdenv.lib.versionAtLeast mlt.version "6.18.0";
+assert stdenv.lib.versionAtLeast libmlt.version "6.20.0";
+assert stdenv.lib.versionAtLeast mlt.version "6.20.0";
 
 mkDerivation rec {
   pname = "shotcut";
-  version = "19.12.31";
+  version = "20.07.11";
 
   src = fetchFromGitHub {
     owner = "mltframework";
     repo = "shotcut";
     rev = "v${version}";
-    sha256 = "1vwgah8pp2kbd0iaz952d3bwxphk06yxqc0pi4hk1mklkh87qzm9";
+    sha256 = "0ajg0bpdckhvmmsliy1xky9p4mdypnaw3z3cvfsdrm0zcihbgazv";
   };
-
-  patches = [ ./0001-encodedock.cpp-connect-to-VAAPI-via-DRM-not-X11.patch ];
 
   enableParallelBuilding = true;
   nativeBuildInputs = [ pkgconfig qmake ];
@@ -60,7 +58,7 @@ mkDerivation rec {
       nixpkgs maintainer(s). If you wish to report any bugs upstream,
       please use the official build from shotcut.org instead.
     '';
-    homepage = https://shotcut.org;
+    homepage = "https://shotcut.org";
     license = licenses.gpl3;
     maintainers = with maintainers; [ goibhniu woffs peti ];
     platforms = platforms.linux;

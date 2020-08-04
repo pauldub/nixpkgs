@@ -133,7 +133,7 @@ in
       tcpcryptd = 93; # tcpcryptd uses a hard-coded uid. We patch it in Nixpkgs to match this choice.
       firebird = 95;
       #keys = 96; # unused
-      #haproxy = 97; # DynamicUser as of 2019-11-08
+      #haproxy = 97; # dynamically allocated as of 2020-03-11
       mongodb = 98;
       openldap = 99;
       #users = 100; # unused
@@ -239,7 +239,6 @@ in
       shout = 206;
       gateone = 207;
       namecoin = 208;
-      dnschain = 209;
       #lxd = 210; # unused
       kibana = 211;
       xtreemfs = 212;
@@ -346,6 +345,7 @@ in
       zoneminder = 314;
       paperless = 315;
       #mailman = 316;  # removed 2019-08-30
+      zigbee2mqtt = 317;
 
       # When adding a uid, make sure it doesn't match an existing gid. And don't use uids above 399!
 
@@ -448,7 +448,7 @@ in
       #tcpcryptd = 93; # unused
       firebird = 95;
       keys = 96;
-      #haproxy = 97; # DynamicUser as of 2019-11-08
+      #haproxy = 97; # dynamically allocated as of 2020-03-11
       #mongodb = 98; # unused
       openldap = 99;
       munin = 102;
@@ -549,7 +549,6 @@ in
       #shout = 206; #unused
       gateone = 207;
       namecoin = 208;
-      #dnschain = 209; #unused
       lxd = 210; # unused
       #kibana = 211;
       xtreemfs = 212;
@@ -647,6 +646,7 @@ in
       zoneminder = 314;
       paperless = 315;
       #mailman = 316;  # removed 2019-08-30
+      zigbee2mqtt = 317;
 
       # When adding a gid, make sure it doesn't match an existing
       # uid. Users and groups with the same name should have equal

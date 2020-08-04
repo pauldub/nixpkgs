@@ -2,21 +2,22 @@
 
 stdenv.mkDerivation rec {
   pname = "ndi";
-  version = "4";
+  fullVersion = "4.5.3";
+  version = builtins.head (builtins.splitVersion fullVersion);
 
   src = requireFile rec {
     name    = "InstallNDISDK_v${version}_Linux.tar.gz";
-    sha256  = "1hac5npyg8nifs9ipj34pkn0zjyx8774x3i3h8znhmijx2j2982p";
+    sha256  = "0w9f4a4a3xzg0nvmvrlda1wwkyi0m5aqvk07immmwgg7f1z1sqj5";
     message = ''
-      In order to use the NDI SDK, you need to comply with NewTek's license and
-      download the Linux version ${version} tarball from:
+      In order to use NDI SDK version ${fullVersion}, you need to comply with
+      NewTek's license and download the appropriate Linux tarball from:
 
-      ${meta.homepage}
+        ${meta.homepage}
 
       Once you have downloaded the file, please use the following command and
       re-run the installation:
 
-      nix-prefetch-url file://\$PWD/${name}
+        \$ nix-prefetch-url file://\$PWD/${name}
     '';
   };
 

@@ -2,18 +2,20 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "topgrade";
-  version = "3.9.0";
+  version = "5.3.0";
 
   src = fetchFromGitHub {
     owner = "r-darwish";
     repo = pname;
     rev = "v${version}";
-    sha256 = "0g9pb4f5skigyahv8kpx7wkvv625lvgnbqz6iq7j7wgixxf4nl1i";
+    sha256 = "1rksd6bbnxaq8rfr5kabcl6xr6paqs0zg57xvn3vzpnnf41g1m3v";
   };
 
-  cargoSha256 = "1y85hl7xl60vsj3ivm6pyd6bvk39wqg25bqxfx00r9myha94iqmd";
+  cargoSha256 = "190sbp8j265iyxvl3rqs5q4wp6wk5c82f2yb46yhdmlm410zck47";
 
   buildInputs = lib.optional stdenv.isDarwin Foundation;
+
+  # TODO: add manpage (topgrade.8) to postInstall on next update
 
   meta = with lib; {
     description = "Upgrade all the things";

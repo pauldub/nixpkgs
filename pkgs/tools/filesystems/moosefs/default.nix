@@ -5,18 +5,18 @@
 , fuse
 , pkgconfig
 , libpcap
-, zlib 
+, zlib
 }:
 
 stdenv.mkDerivation rec {
   pname = "moosefs";
-  version = "3.0.109";
+  version = "3.0.114";
 
   src = fetchFromGitHub {
     owner = pname;
     repo = pname;
     rev = "v${version}";
-    sha256 = "1pwackc511fzx28w3an5qk738ykhpspvc1063w2hv901f213xjzw";
+    sha256 = "0bilrzzlg599xy21cm7r0xb2sanngr74j3z03xgybcm10kl97i7j";
   };
 
   nativeBuildInputs = [ pkgconfig makeWrapper ];
@@ -25,12 +25,13 @@ stdenv.mkDerivation rec {
     [ fuse libpcap zlib ];
 
   postInstall = ''
+    substituteInPlace $out/sbin/mfscgiserv --replace "datapath=\"$out" "datapath=\""
     wrapProgram $out/sbin/mfscgiserv \
         --prefix PATH ":" "${python}/bin"
   '';
 
   meta = with stdenv.lib; {
-    homepage = https://moosefs.com;
+    homepage = "https://moosefs.com";
     description = "Open Source, Petabyte, Fault-Tolerant, Highly Performing, Scalable Network Distributed File System";
     platforms = platforms.linux;
     license = licenses.gpl2;

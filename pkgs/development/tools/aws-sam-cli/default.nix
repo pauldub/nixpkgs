@@ -1,4 +1,5 @@
-{ lib
+{ fetchFromGitHub
+, lib
 , python
 , enableTelemetry ? false
 }:
@@ -6,6 +7,14 @@
 let
   py = python.override {
     packageOverrides = self: super: {
+      aws-sam-translator = super.aws-sam-translator.overridePythonAttrs (oldAttrs: rec {
+        version = "1.25.0";
+        src = oldAttrs.src.override {
+          inherit version;
+          sha256 = "08756yl5lpqgrpr80f2b6bdcgygr37l6q1yygklcg9hz4yfpccav";
+        };
+      });
+
       flask = super.flask.overridePythonAttrs (oldAttrs: rec {
         version = "1.0.2";
         src = oldAttrs.src.override {
@@ -30,11 +39,11 @@ with py.pkgs;
 
 buildPythonApplication rec {
   pname = "aws-sam-cli";
-  version = "0.40.0";
+  version = "1.0.0rc1";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1vlg5fdkq5xr4v3a86gyxbbrx4rzdspbv62ki7q8yq8xdja1qz05";
+    sha256 = "011b334gdvd9lhqia8c952q3cmzj99vik680180nbp0qh2xw6zpf";
   };
 
   # Tests are not included in the PyPI package
@@ -50,6 +59,7 @@ buildPythonApplication rec {
     docker
     flask
     idna
+    jmespath
     pathlib2
     requests
     serverlessrepo
@@ -65,17 +75,18 @@ buildPythonApplication rec {
   # fix over-restrictive version bounds
   postPatch = ''
     substituteInPlace requirements/base.txt \
-      --replace "requests==2.20.1" "requests==2.22.0" \
+      --replace "boto3~=1.13.0, >=1.13.0" "boto3~=1.14.3" \
       --replace "serverlessrepo==0.1.9" "serverlessrepo~=0.1.9" \
-      --replace "six~=1.11.0" "six~=1.12.0" \
       --replace "python-dateutil~=2.6, <2.8.1" "python-dateutil~=2.6" \
-      --replace "PyYAML~=3.12" "PyYAML~=5.1"
+      --replace "jmespath~=0.9.5" "jmespath~=0.10.0" \
+      --replace "tomlkit==0.5.8" "tomlkit~=0.6.0" \
+      --replace "requests==2.22.0" "requests~=2.22"
   '';
 
   meta = with lib; {
-    homepage = https://github.com/awslabs/aws-sam-cli;
+    homepage = "https://github.com/awslabs/aws-sam-cli";
     description = "CLI tool for local development and testing of Serverless applications";
     license = licenses.asl20;
-    maintainers = with maintainers; [ andreabedini dhkl ];
+    maintainers = with maintainers; [ andreabedini lo1tuma ];
   };
 }

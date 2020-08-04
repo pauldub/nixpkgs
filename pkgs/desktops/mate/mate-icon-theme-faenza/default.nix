@@ -11,11 +11,7 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ autoreconfHook gtk3 ];
 
-  buildInputs = [ mate.mate-icon-theme ];
-
-  propagatedBuildInputs = [
-    hicolor-icon-theme
-  ];
+  propagatedBuildInputs = [ mate.mate-icon-theme hicolor-icon-theme ];
 
   dontDropIconThemeCache = true;
 
@@ -25,9 +21,11 @@ stdenv.mkDerivation rec {
     done
   '';
 
+  enableParallelBuilding = true;
+
   meta = {
     description = "Faenza icon theme from MATE";
-    homepage = https://mate-desktop.org;
+    homepage = "https://mate-desktop.org";
     license = stdenv.lib.licenses.gpl2;
     platforms = stdenv.lib.platforms.unix;
     maintainers = [ stdenv.lib.maintainers.romildo ];

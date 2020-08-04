@@ -2,13 +2,13 @@
 
 buildPythonPackage rec {
   pname = "coloredlogs";
-  version = "10.0";
+  version = "14.0";
 
   src = fetchFromGitHub {
     owner = "xolox";
     repo = "python-coloredlogs";
     rev = version;
-    sha256 = "0rdvp4dfvzhx7z7s2jdl3fv7x1hazgpy5gc7bcf05bnbv2iia54a";
+    sha256 = "0rnmxwrim4razlv4vi3krxk5lc5ksck6h5374j8avqwplika7q2x";
   };
 
   # patch by risicle
@@ -28,7 +28,7 @@ buildPythonPackage rec {
 
   meta = with lib; {
     description = "Colored stream handler for Python's logging module";
-    homepage = https://github.com/xolox/python-coloredlogs;
+    homepage = "https://github.com/xolox/python-coloredlogs";
     license = licenses.mit;
     maintainers = with maintainers; [ eyjhb ];
   };

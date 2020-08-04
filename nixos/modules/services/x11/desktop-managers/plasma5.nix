@@ -52,6 +52,8 @@ let
   '';
 
   activationScript = ''
+    ${set_XDG_CONFIG_HOME}
+
     # The KDE icon cache is supposed to update itself automatically, but it uses
     # the timestamp on the icon theme directory as a trigger. This doesn't work
     # on NixOS because the timestamp never changes. As a workaround, delete the
@@ -62,7 +64,7 @@ let
     # xdg-desktop-settings generates this empty file but
     # it makes kbuildsyscoca5 fail silently. To fix this
     # remove that menu if it exists.
-    rm -fv ''${XDG_CONFIG_HOME:?}/menus/applications-merged/xdg-desktop-menu-dummy.menu
+    rm -fv ''${XDG_CONFIG_HOME}/menus/applications-merged/xdg-desktop-menu-dummy.menu
 
     # Qt writes a weird ‘libraryPath’ line to
     # ~/.config/Trolltech.conf that causes the KDE plugin
@@ -71,7 +73,7 @@ let
     # disastrous, so here we nuke references to the Nix store
     # in Trolltech.conf.  A better solution would be to stop
     # Qt from doing this wackiness in the first place.
-    trolltech_conf="''${XDG_CONFIG_HOME:?}/Trolltech.conf"
+    trolltech_conf="''${XDG_CONFIG_HOME}/Trolltech.conf"
     if [ -e "$trolltech_conf" ]; then
         ${sed} -i "$trolltech_conf" -e '/nix\\store\|nix\/store/ d'
     fi
@@ -84,10 +86,20 @@ let
     ${pkgs.libsForQt5.kservice}/bin/kbuildsycoca5
   '';
 
+  set_XDG_CONFIG_HOME = ''
+      # Set the default XDG_CONFIG_HOME if it is unset.
+      # Per the XDG Base Directory Specification:
+      # https://specifications.freedesktop.org/basedir-spec/latest
+      # 1. Never export this variable! If it is unset, then child processes are
+      # expected to set the default themselves.
+      # 2. Contaminate / if $HOME is unset; do not check if $HOME is set.
+      XDG_CONFIG_HOME=''${XDG_CONFIG_HOME:-$HOME/.config}
+  '';
+
   startplasma =
     ''
-      export XDG_CONFIG_HOME="''${XDG_CONFIG_HOME:-$HOME/.config}"
-      mkdir -p "''${XDG_CONFIG_HOME:?}"
+      ${set_XDG_CONFIG_HOME}
+      mkdir -p "''${XDG_CONFIG_HOME}"
 
     ''
     + optionalString pulseaudio.enable ''
@@ -100,10 +112,10 @@ let
       ${activationScript}
 
       # Create default configurations if Plasma has never been started.
-      kdeglobals="''${XDG_CONFIG_HOME:?}/kdeglobals"
+      kdeglobals="''${XDG_CONFIG_HOME}/kdeglobals"
       if ! [ -f "$kdeglobals" ]
       then
-          kcminputrc="''${XDG_CONFIG_HOME:?}/kcminputrc"
+          kcminputrc="''${XDG_CONFIG_HOME}/kcminputrc"
           if ! [ -f "$kcminputrc" ]
           then
               cat ${kcminputrc} >"$kcminputrc"
@@ -115,7 +127,7 @@ let
               cat ${gtkrc2} >"$gtkrc2"
           fi
 
-          gtk3_settings="''${XDG_CONFIG_HOME:?}/gtk-3.0/settings.ini"
+          gtk3_settings="''${XDG_CONFIG_HOME}/gtk-3.0/settings.ini"
           if ! [ -f "$gtk3_settings" ]
           then
               mkdir -p "$(dirname "$gtk3_settings")"
@@ -146,6 +158,19 @@ in
         example = "vlc";
         description = "Phonon audio backend to install.";
       };
+
+      supportDDC = mkOption {
+        type = types.bool;
+        default = false;
+        description = ''
+          Support setting monitor brightness via DDC.
+          </para>
+          <para>
+          This is not needed for controlling brightness of the internal monitor
+          of a laptop and as it is considered experimental by upstream, it is
+          disabled by default.
+        '';
+      };
     };
 
   };
@@ -171,6 +196,12 @@ in
           capabilities = "cap_sys_nice+ep";
         };
       };
+
+      # DDC support
+      boot.kernelModules = lib.optional cfg.supportDDC "i2c_dev";
+      services.udev.extraRules = lib.optionalString cfg.supportDDC ''
+        KERNEL=="i2c-[0-9]*", TAG+="uaccess"
+      '';
 
       environment.systemPackages = with pkgs; with qt5; with libsForQt5; with plasma5; with kdeApplications;
         [
@@ -290,7 +321,7 @@ in
 
       fonts.fonts = with pkgs; [ noto-fonts hack-font ];
       fonts.fontconfig.defaultFonts = {
-        monospace = [ "Hack" "Noto Mono" ];
+        monospace = [ "Hack" "Noto Sans Mono" ];
         sansSerif = [ "Noto Sans" ];
         serif = [ "Noto Serif" ];
       };

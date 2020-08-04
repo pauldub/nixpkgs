@@ -5,11 +5,11 @@
 
 buildPythonPackage rec {
   pname = "dash_renderer";
-  version = "1.2.3";
+  version = "1.5.0";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1ccsykv24dz9xj24106aaj7f0w7x7sv7mamjbx0m6k0wyhh58vw1";
+    sha256 = "14fp66vasfag1bss09qyjnqa000g56q7vcap3ig57xycflks4c3y";
   };
 
   # No tests in archive
@@ -17,7 +17,7 @@ buildPythonPackage rec {
 
   meta = with lib; {
     description = "Renderer for the Dash framework";
-    homepage = https://dash.plot.ly/;
+    homepage = "https://dash.plot.ly/";
     license = licenses.mit;
     maintainers = [ maintainers.antoinerg ];
   };

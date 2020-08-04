@@ -1,26 +1,32 @@
-{ stdenv, buildGoModule, fetchFromGitHub }:
+{ lib, buildGoModule, fetchFromGitHub }:
 
 buildGoModule rec {
   pname = "shfmt";
-  version = "3.0.1";
+  version = "3.1.2";
 
   src = fetchFromGitHub {
     owner = "mvdan";
     repo = "sh";
     rev = "v${version}";
-    sha256 = "1y6n2xi8m579xksnnsdzb4zvcvij48kywjfqzp7qm43ni8g7w9a8";
+    sha256 = "03zgi0rlra3gz8cbqwmhpjxsg5048anfc6ccd2w50fjhx6farsnv";
   };
 
-  modSha256 = "1ll2cxhgf8hh19wzdykgc81c4yfcp8bzmfaif08nvvb63rhjdb5y";
-  subPackages = ["cmd/shfmt"];
+  vendorSha256 = "1jq2x4yxshsy4ahp7nrry8dc9cyjj46mljs447rq57sgix4ndpq8";
 
-  meta = with stdenv.lib; {
-    homepage = https://github.com/mvdan/sh;
+  subPackages = [ "cmd/shfmt" ];
+
+  buildFlagsArray = [ "-ldflags=-s -w -X main.version=${version}" ];
+
+  doCheck = true;
+
+  meta = with lib; {
+    homepage = "https://github.com/mvdan/sh";
     description = "A shell parser and formatter";
     longDescription = ''
       shfmt formats shell programs. It can use tabs or any number of spaces to indent.
       You can feed it standard input, any number of files or any number of directories to recurse into.
     '';
     license = licenses.bsd3;
+    maintainers = with maintainers; [ zowoq ];
   };
 }

@@ -31,7 +31,9 @@ stdenv.mkDerivation rec {
 
   postPatch = ''
     patchShebangs utils/
-    substituteInPlace Makefile --replace ldconfig true
+    substituteInPlace Makefile \
+      --replace ldconfig true \
+      --replace pkg-config $PKG_CONFIG
     sed -i crda.c \
       -e "/\/usr\/.*\/regulatory.bin/d" \
       -e "s|/lib/crda|${wireless-regdb}/lib/crda|g"
@@ -70,7 +72,7 @@ stdenv.mkDerivation rec {
 
       to the system configuration.
     '';
-    homepage = http://drvbp1.linux-foundation.org/~mcgrof/rel-html/crda/;
+    homepage = "http://drvbp1.linux-foundation.org/~mcgrof/rel-html/crda/";
     license = licenses.free; # "copyleft-next 0.3.0", as yet without a web site
     platforms = platforms.linux;
   };

@@ -1,19 +1,38 @@
-{ stdenv, fetchFromGitHub, cmake, expat, proj, bzip2, zlib, boost, postgresql, lua}:
+{ stdenv
+, fetchFromGitHub
+, cmake
+, expat
+, proj
+, bzip2
+, zlib
+, boost
+, postgresql
+, withLuaJIT ? false
+, lua
+, luajit
+, libosmium
+, protozero
+}:
 
 stdenv.mkDerivation rec {
   pname = "osm2pgsql";
-  version = "1.2.1";
+  version = "1.3.0";
 
   src = fetchFromGitHub {
     owner = "openstreetmap";
     repo = pname;
     rev = version;
-    sha256 = "1ysan01lpqzjxlq3y2kdminfjs5d9zksicpf9vvzpdk3fzq51fc9";
+    sha256 = "1dsyhcifixmcw05qxjald02pml0zfdij81pgy9yh8p00v0rqq57x";
   };
 
   nativeBuildInputs = [ cmake ];
 
-  buildInputs = [ expat proj bzip2 zlib boost postgresql lua ];
+  buildInputs = [ expat proj bzip2 zlib boost postgresql libosmium protozero ]
+    ++ stdenv.lib.optional withLuaJIT luajit
+    ++ stdenv.lib.optional (!withLuaJIT) lua;
+
+  cmakeFlags = [ "-DEXTERNAL_LIBOSMIUM=ON" "-DEXTERNAL_PROTOZERO=ON" ]
+    ++ stdenv.lib.optional withLuaJIT "-DWITH_LUAJIT:BOOL=ON";
 
   NIX_CFLAGS_COMPILE = "-DACCEPT_USE_OF_DEPRECATED_PROJ_API_H";
 
@@ -21,7 +40,7 @@ stdenv.mkDerivation rec {
     description = "OpenStreetMap data to PostgreSQL converter";
     homepage = "https://github.com/openstreetmap/osm2pgsql";
     license = licenses.gpl2;
-    platforms = platforms.linux;
-    maintainers = with maintainers; [ jglukasik ];
+    platforms = with platforms; linux ++ darwin;
+    maintainers = with maintainers; [ jglukasik das-g ];
   };
 }

@@ -2,18 +2,20 @@
 
 buildGoModule rec {
   pname = "fluxctl";
-  version = "1.17.1";
+  version = "1.20.0";
 
   src = fetchFromGitHub {
     owner = "weaveworks";
     repo = "flux";
     rev = version;
-    sha256 = "0kp4xk1b8vxajl3cl6any9gmf3412gsahm5fvkyaclnj20yvq807";
+    sha256 = "0bfib5pg2cbip6fw45slb0h3a7qpikxsfpclzr86bcnjq60pshl1";
   };
 
-  modSha256 = "0fnlnavw4l3425c9nwjkd98xihrgxi9n5yc9yv15j5xzg47qnqav";
+  vendorSha256 = "0a5sv11pb2i6r0ffwaiqdhc0m7gz679yfmqw6ix9imk4ybhf4jp9";
 
   subPackages = [ "cmd/fluxctl" ];
+
+  buildFlagsArray = [ "-ldflags=-s -w -X main.version=${version}" ];
 
   meta = with stdenv.lib; {
     description = "CLI client for Flux, the GitOps Kubernetes operator";
